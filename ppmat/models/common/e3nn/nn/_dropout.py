@@ -14,8 +14,8 @@
 
 import paddle
 
-from ppmat.models.common.e3nn import o3
-from ppmat.models.common.e3nn.paddle_utils import *
+from e3nn import o3
+from e3nn.paddle_utils import *
 
 
 class Dropout(paddle.nn.Layer):

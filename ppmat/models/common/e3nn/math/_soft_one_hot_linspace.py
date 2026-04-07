@@ -16,9 +16,9 @@ import math
 
 import paddle
 
-from ppmat.models.common.e3nn.paddle_utils import *
+from e3nn.paddle_utils import *
 
-# from ppmat.models.common.e3nn.math import soft_unit_step
+# from e3nn.math import soft_unit_step
 from ._soft_unit_step import soft_unit_step
 
 

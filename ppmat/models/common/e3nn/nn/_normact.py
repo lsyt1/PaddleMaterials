@@ -17,7 +17,7 @@ from typing import Optional
 
 import paddle
 
-from ppmat.models.common.e3nn import o3
+from e3nn import o3
 
 
 class NormActivation(paddle.nn.Layer):

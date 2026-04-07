@@ -24,7 +24,7 @@ from typing import Union
 import sympy
 from sympy.printing.pycode import pycode
 
-from ppmat.models.common.e3nn import o3
+from e3nn import o3
 
 
 class SphericalHarmonics(paddle.nn.Layer):

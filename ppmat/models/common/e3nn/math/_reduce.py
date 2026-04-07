@@ -16,8 +16,8 @@ import itertools
 
 import paddle
 
-from ppmat.models.common.e3nn.math import perm
-from ppmat.models.common.e3nn.paddle_utils import *
+from e3nn.math import perm
+from e3nn.paddle_utils import *
 
 
 def germinate_formulas(formula):

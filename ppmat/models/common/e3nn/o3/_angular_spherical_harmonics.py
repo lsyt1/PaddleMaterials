@@ -15,7 +15,7 @@
 import paddle
 import paddle.nn as nn
 
-from ppmat.models.common.e3nn.paddle_utils import *
+from e3nn.paddle_utils import *
 
 """Spherical Harmonics as functions of Euler angles
 """
@@ -31,7 +31,7 @@ from sympy import pi
 from sympy import sqrt
 from sympy import symbols
 
-from ppmat.models.common.e3nn import o3
+from e3nn import o3
 
 
 class SphericalHarmonicsAlphaBeta(paddle.nn.Layer):

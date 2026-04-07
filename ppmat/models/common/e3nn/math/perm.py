@@ -20,8 +20,8 @@ from typing import Tuple
 
 import paddle
 
-from ppmat.models.common.e3nn.math import complete_basis
-from ppmat.models.common.e3nn.paddle_utils import *
+from e3nn.math import complete_basis
+from e3nn.paddle_utils import *
 
 TY_PERM = Tuple[int]
 

@@ -14,8 +14,8 @@
 
 import paddle
 
-from ppmat.models.common.e3nn.math import normalize2mom
-from ppmat.models.common.e3nn.o3 import SO3Grid
+from e3nn.math import normalize2mom
+from e3nn.o3 import SO3Grid
 
 
 class SO3Activation(paddle.nn.Layer):

@@ -19,7 +19,7 @@ import paddle
 import functools
 import math
 
-from ppmat.models.common.e3nn.util import explicit_default_types
+from e3nn.util import explicit_default_types
 
 
 def su2_generators(j) -> paddle.Tensor:
@@ -159,7 +159,7 @@ def wigner_3j(l1, l2, l3, dtype=None, device=None):
     assert isinstance(l1, int) and isinstance(l2, int) and isinstance(l3, int)
     C = _so3_clebsch_gordan(l1, l2, l3)
     dtype, device = explicit_default_types(dtype, device)
-    return C.to(dtype=dtype, device=device).clone()
+    return C.astype(dtype).clone()
 
 
 @functools.lru_cache(maxsize=None)
@@ -167,7 +167,7 @@ def _so3_clebsch_gordan(l1, l2, l3):
     Q1 = change_basis_real_to_complex(l1, dtype="float64")
     Q2 = change_basis_real_to_complex(l2, dtype="float64")
     Q3 = change_basis_real_to_complex(l3, dtype="float64")
-    C = _su2_clebsch_gordan(l1, l2, l3).to(dtype="complex128")
+    C = _su2_clebsch_gordan(l1, l2, l3).astype("complex128")
     C = paddle.einsum("ij,kl,mn,ikn->jlm", Q1, Q2, paddle.conj(x=Q3.T), C)
     assert paddle.all(x=paddle.abs(x=paddle.imag(x=C)) < 1e-05)
     C = paddle.real(x=C)

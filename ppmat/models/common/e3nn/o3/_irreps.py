@@ -19,9 +19,9 @@ from typing import Union
 
 import paddle
 
-from ppmat.models.common.e3nn.math import direct_sum
-from ppmat.models.common.e3nn.math import perm
-from ppmat.models.common.e3nn.paddle_utils import *
+from e3nn.math import direct_sum
+from e3nn.math import perm
+from e3nn.paddle_utils import *
 
 from . import _rotation
 from . import _wigner

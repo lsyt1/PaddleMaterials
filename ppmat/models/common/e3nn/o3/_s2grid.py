@@ -16,9 +16,9 @@ import math
 
 import paddle
 
-from ppmat.models.common.e3nn import o3
-from ppmat.models.common.e3nn.paddle_utils import *
-from ppmat.models.common.e3nn.util import explicit_default_types
+from e3nn import o3
+from e3nn.paddle_utils import *
+from e3nn.util import explicit_default_types
 
 """Transformation between two representations of a signal on the sphere.
 

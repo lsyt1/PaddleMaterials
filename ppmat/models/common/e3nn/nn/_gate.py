@@ -14,9 +14,9 @@
 
 import paddle
 
-from ppmat.models.common.e3nn import o3
-from ppmat.models.common.e3nn.nn import Activation
-from ppmat.models.common.e3nn.nn import Extract
+from e3nn import o3
+from e3nn.nn import Activation
+from e3nn.nn import Extract
 
 
 class _Sortcut(paddle.nn.Layer):

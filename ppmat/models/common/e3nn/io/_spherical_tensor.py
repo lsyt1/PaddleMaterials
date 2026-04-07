@@ -18,10 +18,10 @@ from math import pi
 import paddle
 import scipy.signal
 
-from ppmat.models.common.e3nn import o3
-from ppmat.models.common.e3nn.o3 import FromS2Grid
-from ppmat.models.common.e3nn.o3 import ToS2Grid
-from ppmat.models.common.e3nn.paddle_utils import *
+from e3nn import o3
+from e3nn.o3 import FromS2Grid
+from e3nn.o3 import ToS2Grid
+from e3nn.paddle_utils import *
 
 
 def _find_peaks_2d(x):

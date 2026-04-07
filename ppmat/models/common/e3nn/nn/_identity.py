@@ -14,7 +14,7 @@
 
 import paddle
 
-from ppmat.models.common.e3nn import o3
+from e3nn import o3
 
 
 class Identity(paddle.nn.Layer):

@@ -14,9 +14,9 @@
 
 import paddle
 
-from ppmat.models.common.e3nn import o3
-from ppmat.models.common.e3nn.math import normalize2mom
-from ppmat.models.common.e3nn.paddle_utils import *
+from e3nn import o3
+from e3nn.math import normalize2mom
+from e3nn.paddle_utils import *
 
 
 class Activation(paddle.nn.Layer):

@@ -16,7 +16,7 @@ import math
 
 import paddle
 
-from ppmat.models.common.e3nn.paddle_utils import *
+from e3nn.paddle_utils import *
 
 
 def rand_matrix(*shape, requires_grad=False, dtype=None, device=None):

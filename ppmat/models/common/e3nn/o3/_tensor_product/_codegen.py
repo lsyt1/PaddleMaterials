@@ -18,8 +18,8 @@ from typing import List
 
 import paddle
 
-from ppmat.models.common.e3nn import o3
-from ppmat.models.common.e3nn.util import prod
+from e3nn import o3
+from e3nn.util import prod
 
 from ._instruction import Instruction
 

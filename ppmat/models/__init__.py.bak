@@ -30,10 +30,10 @@ from ppmat.models.common.graph_converter import CrystalNN
 from ppmat.models.common.graph_converter import FindPointsInSpheres
 from ppmat.models.common.graph_converter import MolecularGraphConverter
 from ppmat.models.diffcsp.diffcsp import DiffCSP
-# # from ppmat.models.diffnmr.diffnmr import DiffNMR
-# from ppmat.models.diffnmr.diffnmr import DiffPrior
-# from ppmat.models.diffnmr.diffnmr import MolecularGraphFormer
-# from ppmat.models.diffnmr.diffnmr import NMRNetCLIP
+from ppmat.models.diffnmr.diffnmr import DiffNMR
+from ppmat.models.diffnmr.diffnmr import DiffPrior
+from ppmat.models.diffnmr.diffnmr import MolecularGraphFormer
+from ppmat.models.diffnmr.diffnmr import NMRNetCLIP
 from ppmat.models.dimenetpp.dimenetpp import DimeNetPlusPlus
 from ppmat.models.mattergen.mattergen import MatterGen
 from ppmat.models.mattergen.mattergen import MatterGenWithCondition

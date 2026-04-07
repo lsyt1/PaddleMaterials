@@ -14,8 +14,8 @@
 
 import paddle
 
-from ppmat.models.common.e3nn.paddle_utils import *
-from ppmat.models.common.e3nn.util import explicit_default_types
+from e3nn.paddle_utils import *
+from e3nn.util import explicit_default_types
 
 
 def moment(f, n, dtype=None, device=None):
@@ -25,7 +25,7 @@ def moment(f, n, dtype=None, device=None):
     """
     dtype, device = explicit_default_types(dtype, device)
     gen = paddle.framework.core.default_cpu_generator().manual_seed(0)
-    z = paddle.randn(shape=[1000000], dtype="float64").to(dtype=dtype, device=device)
+    z = paddle.randn(shape=[1000000], dtype=dtype)
     return f(z).pow(y=n).mean()
 
 

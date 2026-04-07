@@ -21,9 +21,9 @@ from typing import Union
 
 import paddle
 
-from ppmat.models.common.e3nn import o3
-from ppmat.models.common.e3nn.util import prod
-from ppmat.models.common.e3nn.util.codegen import CodeGenMixin
+from e3nn import o3
+from e3nn.util import prod
+from e3nn.util.codegen import CodeGenMixin
 
 from ._tensor_product._codegen import _sum_tensors
 

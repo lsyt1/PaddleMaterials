@@ -16,12 +16,12 @@ import collections
 
 import paddle
 
-from ppmat.models.common.e3nn import o3
-from ppmat.models.common.e3nn.math import germinate_formulas
-from ppmat.models.common.e3nn.math import orthonormalize
-from ppmat.models.common.e3nn.math import reduce_permutation
-from ppmat.models.common.e3nn.util import explicit_default_types
-from ppmat.models.common.e3nn.util.codegen import CodeGenMixin
+from e3nn import o3
+from e3nn.math import germinate_formulas
+from e3nn.math import orthonormalize
+from e3nn.math import reduce_permutation
+from e3nn.util import explicit_default_types
+from e3nn.util.codegen import CodeGenMixin
 
 _TP = collections.namedtuple("tp", "op, args")
 _INPUT = collections.namedtuple("input", "tensor, start, stop")

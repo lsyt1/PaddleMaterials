@@ -25,8 +25,8 @@ import paddle
 from matplotlib import patches
 from matplotlib.path import Path
 
-from ppmat.models.common.e3nn import o3
-from ppmat.models.common.e3nn.util import prod
+from e3nn import o3
+from e3nn.util import prod
 
 from ._codegen import codegen_tensor_product_left_right
 from ._codegen import codegen_tensor_product_right
