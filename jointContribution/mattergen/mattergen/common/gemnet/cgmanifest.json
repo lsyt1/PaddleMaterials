@@ -1,16 +1,3 @@
-{
-  "$schema": "https://json.schemastore.org/component-detection-manifest.json",
-  "registrations": [
-    {
-      "component": {
-        "git": {
-          "commitHash": "65c2d6246e69169f43949858d39550d2a635c7e0",
-          "repositoryUrl": "https://github.com/FAIR-Chem/fairchem"
-        },
-        "type": "git"
-      },
-      "developmentDependency": false
-    }
-  ],
-  "version": 1
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:35e52c0ed443c77af2d4cd26b6312aa9da640800d113310a8cad9182e936b977
+size 388
