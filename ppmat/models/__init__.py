@@ -45,6 +45,7 @@ from ppmat.models.infgcn.infgcn import InfGCN
 from ppmat.models.mateno.mateno import MatENO
 from ppmat.models.sfin.sfin import SFIN
 from ppmat.models.spherenet.spherenet import SphereNet
+from ppmat.models.liflow import LiFlow
 from ppmat.utils import download
 from ppmat.utils import logger
 from ppmat.utils import save_load
@@ -73,6 +74,7 @@ __all__ = [
     "MatENO",
     "SFIN",
     "SphereNet",
+    "LiFlow",
 ]
 
 # Warning: The key of the dictionary must be consistent with the file name of the value
@@ -141,6 +143,7 @@ MODEL_REGISTRY = {
     "spherenet_md17_salicylic": "https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/interatomic_potentials/spherenet/spherenet_md17_salicylic.zip",
     "spherenet_md17_toluene": "https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/interatomic_potentials/spherenet/spherenet_md17_toluene.zip",
     "spherenet_md17_uracil": "https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/interatomic_potentials/spherenet/spherenet_md17_uracil.zip",
+    "liflow_universal": "https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/molecular_dynamics_integrator/liflow/liflow_universal.zip",
 }
 
 

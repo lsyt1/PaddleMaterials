@@ -32,6 +32,7 @@ from paddle.io import DistributedBatchSampler  # noqa
 from ppmat.datasets import collate_fn
 from ppmat.datasets.high_level_water_dataset import HighLevelWaterDataset
 from ppmat.datasets.jarvis_dataset import JarvisDataset
+from ppmat.datasets.liflow_dataset import LiFlowDataset
 from ppmat.datasets.matbench_dataset import MatbenchDataset
 from ppmat.datasets.mp20_dataset import AlexMP20MatterGenDataset
 from ppmat.datasets.mp20_dataset import MP20Dataset
@@ -63,6 +64,7 @@ __all__ = [
     "set_signal_handlers",
     "MPTrjDataset",
     "JarvisDataset",
+    "LiFlowDataset",
     "HighLevelWaterDataset",
     "MSDnmrDataset",
     "MatbenchDataset",
