@@ -112,7 +112,7 @@ MODEL_REGISTRY = {
     "mattergen_alex_mp20_chemical_system_energy_above_hull": "https://paddle-org.bj.bcebos.com/paddlematerial/checkpoints/structure_generation/mattergen/mattergen_alex_mp20_chemical_system_energy_above_hull.zip",
     "mattergen_alex_mp20_dft_mag_density_hhi_score": "https://paddle-org.bj.bcebos.com/paddlematerial/checkpoints/structure_generation/mattergen/mattergen_alex_mp20_dft_mag_density_hhi_score.zip",
     "chgnet_mptrj": "https://paddle-org.bj.bcebos.com/paddlematerial/checkpoints/interatomic_potentials/chgnet/chgnet_mptrj.zip",
-    "mace_mp0_medium": "https://paddle-org.bj.bcebos.com/paddlematerial/checkpoints/interatomic_potentials/mace/mace_mp0_medium.zip",
+    "mace_mp0_medium": "https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/interatomic_potentials/mace/mace_mp0_medium.zip",
     "dimenetpp_mp2018_train_60k_e_form": "https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/property_prediction/dimenet%2B%2B/dimenetpp_mp2018_train_60k_e_form.zip",
     "dimenetpp_mp2018_train_60k_band_gap": "https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/property_prediction/dimenet%2B%2B/dimenetpp_mp2018_train_60k_band_gap.zip",
     "dimenetpp_mp2018_train_60k_G": "https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/property_prediction/dimenet%2B%2B/dimenetpp_mp2018_train_60k_G.zip",
