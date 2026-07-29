@@ -10,10 +10,16 @@ LiFlow is a generative framework for accelerating molecular dynamics simulations
 
 | Dataset | Description | Download |
 |---------|-------------|----------|
-| Universal MLIP / LGPS | Official LiFlow trajectory data (BCE mirror) | [liflow.zip](https://paddle-org.bj.bcebos.com/paddlematerials/datasets/liflow/liflow.zip) |
+| Universal MLIP / LGPS | Official LiFlow trajectory data | [Zenodo 14889658](https://zenodo.org/records/14889658) ([DOI](https://doi.org/10.5281/zenodo.14889658)) |
 | LPS | Available from the original authors upon request | — |
 
-If the local directory `data/liflow` does not exist, `LiFlowDataset` downloads the BCE archive automatically. You can also place the extracted files under `data/liflow` manually.
+Download every `data.tar.gz.part.*` file from Zenodo, then merge and extract into `data/liflow`:
+
+```bash
+cat data.tar.gz.part.* > data.tar.gz
+mkdir -p data/liflow
+tar -xvf data.tar.gz -C data/liflow
+```
 
 Each dataset directory contains:
 

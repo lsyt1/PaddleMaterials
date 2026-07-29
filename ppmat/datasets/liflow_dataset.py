@@ -32,7 +32,6 @@ from paddle.io import Dataset
 
 from ppmat.datasets.build_structure import BuildStructure
 from ppmat.datasets.custom_data_type import ConcatNumpyWarper
-from ppmat.utils import download
 from ppmat.utils import logger
 from ppmat.utils.misc import is_equal
 
@@ -44,7 +43,8 @@ class LiFlowDataset(Dataset):
     dataset used by the LiFlow flow-matching models.
 
     **Dataset Overview**
-    - **Source**: Official trajectory data rehosted on BCE for PaddleMaterials.
+    - **Source**: https://zenodo.org/records/14889658
+      (DOI: https://doi.org/10.5281/zenodo.14889658)
     - **Reference code**: https://github.com/learningmatter-mit/liflow
     - Includes the universal MLIP set and LGPS. LPS data are available from the
       original authors upon request.
@@ -71,7 +71,8 @@ class LiFlowDataset(Dataset):
 
     Args:
         path (str): Root directory of the LiFlow dataset. If the directory does not
-            exist, it will be downloaded from BCE. Defaults to ``"./data/liflow"``.
+            exist, a download hint for the Zenodo record is logged. Defaults to
+            ``"./data/liflow"``.
         index_file (str): Index CSV file name or absolute path. Relative paths are
             resolved under ``path``. Defaults to ``train_800K.csv``.
         time_delay_steps (int, optional): Frame gap between the two endpoints.
@@ -97,10 +98,9 @@ class LiFlowDataset(Dataset):
     """
 
     name = "liflow"
-    # BCE dataset mirror (same hosting style as MD17 / MP20). Ask maintainers to sync
-    # the official archive if the URL is not yet published.
-    url = "https://paddle-org.bj.bcebos.com/paddlematerials/datasets/liflow/liflow.zip"
-    md5 = None
+    # 官方数据为 Zenodo 分卷包，无法用单文件 get_datasets_path_from_url 一键下载
+    url = "https://zenodo.org/records/14889658"
+    doi = "https://doi.org/10.5281/zenodo.14889658"
 
     def __init__(
         self,
@@ -119,20 +119,15 @@ class LiFlowDataset(Dataset):
         super().__init__()
 
         if not osp.exists(path):
-            logger.message("The dataset is not found. Will download it now.")
-            root_path = download.get_datasets_path_from_url(self.url, self.md5)
-            candidates = [
-                osp.join(root_path, self.name),
-                osp.join(root_path, osp.basename(path.rstrip("\\/"))),
-                root_path,
-            ]
-            for candidate in candidates:
-                if osp.exists(osp.join(candidate, "element_index.npy")):
-                    path = candidate
-                    break
-            else:
-                path = candidates[0]
-            logger.message(f"Resolved LiFlow dataset path to {path}")
+            logger.message(
+                f"The dataset is not found at {path}. Please download all "
+                f"data.tar.gz.part.* files from {self.url} (DOI: {self.doi}), "
+                f"merge them with `cat data.tar.gz.part.* > data.tar.gz`, extract "
+                f"into '{path}', then retry."
+            )
+            raise FileNotFoundError(
+                f"LiFlow dataset path not found: {path}. Download from {self.url}"
+            )
 
         self.path = path
         index_path = index_file
