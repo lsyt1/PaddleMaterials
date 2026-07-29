@@ -60,6 +60,12 @@ Dataset:
         prior_scale_frame: [0.316, 3.16]
         seed: 42
         random_time: true
+        build_structure_cfg:
+          format: array
+          primitive: false
+          niggli: false
+          canocial: false
+          num_cpus: 1
     loader:
       num_workers: 0
       use_shared_memory: false
@@ -70,8 +76,60 @@ Dataset:
         batch_size: 16
         shuffle: true
         drop_last: false
-  val: null
-  test: null
+  val:
+    dataset:
+      __class_name__: LiFlowDataset
+      __init_params__:
+        path: data/liflow
+        index_file: test_800K.csv
+        time_delay_steps: 100
+        prior_scale_li: [1.0, 10.0]
+        prior_scale_frame: [0.316, 3.16]
+        seed: 42
+        random_time: false
+        build_structure_cfg:
+          format: array
+          primitive: false
+          niggli: false
+          canocial: false
+          num_cpus: 1
+    loader:
+      num_workers: 0
+      use_shared_memory: false
+      collate_fn: DefaultCollator
+    sampler:
+      __class_name__: BatchSampler
+      __init_params__:
+        batch_size: 16
+        shuffle: false
+        drop_last: false
+  test:
+    dataset:
+      __class_name__: LiFlowDataset
+      __init_params__:
+        path: data/liflow
+        index_file: test_800K.csv
+        time_delay_steps: 100
+        prior_scale_li: [1.0, 10.0]
+        prior_scale_frame: [0.316, 3.16]
+        seed: 42
+        random_time: false
+        build_structure_cfg:
+          format: array
+          primitive: false
+          niggli: false
+          canocial: false
+          num_cpus: 1
+    loader:
+      num_workers: 0
+      use_shared_memory: false
+      collate_fn: DefaultCollator
+    sampler:
+      __class_name__: BatchSampler
+      __init_params__:
+        batch_size: 16
+        shuffle: false
+        drop_last: false
 
 Predict:
   path: data/liflow
