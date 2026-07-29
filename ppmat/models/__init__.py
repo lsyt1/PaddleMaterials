@@ -44,7 +44,6 @@ from ppmat.models.megnet.megnet import MEGNetPlus
 from ppmat.models.infgcn.infgcn import InfGCN
 from ppmat.models.mateno.mateno import MatENO
 from ppmat.models.mace.model import MACE
-from ppmat.models.mace.mace_graph_converter import MACEGraphConverter
 from ppmat.models.sfin.sfin import SFIN
 from ppmat.models.spherenet.spherenet import SphereNet
 from ppmat.utils import download
@@ -66,7 +65,6 @@ __all__ = [
     "M3GNetGraphConvertor",
     "M3GNet",
     "MACE",
-    "MACEGraphConverter",
     "MolecularGraphConverter",
     "RadiusGraphConverter",
     "MolecularGraphFormer",
