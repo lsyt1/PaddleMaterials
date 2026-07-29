@@ -8,9 +8,12 @@ LiFlow is a generative framework for accelerating molecular dynamics simulations
 
 ## Datasets
 
-The original LiFlow datasets are available from the [Zenodo record](https://zenodo.org/records/14889658) ([DOI: 10.5281/zenodo.14889658](https://doi.org/10.5281/zenodo.14889658)). They include the universal machine-learned interatomic potential set and the LGPS set. The LPS data are available from the original authors upon request.
+| Dataset | Description | Download |
+|---------|-------------|----------|
+| Universal MLIP / LGPS | Official LiFlow trajectory data | [Zenodo 14889658](https://zenodo.org/records/14889658) ([DOI: 10.5281/zenodo.14889658](https://doi.org/10.5281/zenodo.14889658)) |
+| LPS | Available from the original authors upon request | — |
 
-The datasets are large and are **not** hosted in the AI Studio model space. Download every `data.tar.gz.part.*` file from Zenodo, then merge and extract:
+Download every `data.tar.gz.part.*` file from Zenodo, then merge and extract:
 
 ```bash
 cat data.tar.gz.part.* > data.tar.gz
@@ -39,24 +42,11 @@ LiFlow uses two flow-matching models:
 
 Both models operate on periodic crystal structures and condition the predicted atomic velocity field on atomic species, positions, simulation time, and temperature.
 
-In PaddleMaterials, the model class lives in `ppmat/models/liflow/`, the dataset class lives in `ppmat/datasets/liflow_dataset.py`, and training / prediction use the shared Molecular Dynamics Integrator task entries:
-
-- `molecular_dynamics_integrator/train.py`
-- `molecular_dynamics_integrator/predict.py`
-
 ## Results
 
 | Model | Dataset | Metric | Paddle result | Config | Checkpoint / Log |
 |-------|---------|--------|---------------|--------|------------------|
 | LiFlow | Universal / LGPS | Pending evaluation | Pending | [liflow_universal](configs/liflow_universal.yaml) | [checkpoint](https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/molecular_dynamics_integrator/liflow/liflow_universal.zip) |
-
-Converted Paddle checkpoints (from the official PyTorch `ckpt/`) are hosted on BCE. Official PyTorch checkpoints remain in the [reference repository](https://github.com/learningmatter-mit/liflow/tree/main/ckpt). A backup copy is also available on [AI Studio](https://aistudio.baidu.com/modelsdetail/51804/space).
-
-Checkpoint package:
-
-```text
-https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/molecular_dynamics_integrator/liflow/liflow_universal.zip
-```
 
 ### Training
 

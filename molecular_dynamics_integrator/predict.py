@@ -27,14 +27,6 @@ from ppmat.utils import logger
 from ppmat.utils import save_load
 
 
-def _to_tensor(data):
-    if isinstance(data, np.ndarray):
-        return paddle.to_tensor(data)
-    if isinstance(data, dict):
-        return {key: _to_tensor(value) for key, value in data.items()}
-    return data
-
-
 class IntegratorPredictor:
     """Molecular dynamics integrator predictor for LiFlow-style models.
 
@@ -86,16 +78,20 @@ class IntegratorPredictor:
         sample_index: Optional[int] = None,
     ):
         """Run prediction on one trajectory pair from LiFlowDataset."""
-        data_path = data_path or self.predict_config.get("data_path")
+        path = (
+            data_path
+            or self.predict_config.get("path")
+            or self.predict_config.get("data_path")
+        )
         index_file = index_file or self.predict_config.get("index_file")
-        if data_path is None or index_file is None:
-            raise ValueError("data_path and index_file must be provided.")
+        if path is None or index_file is None:
+            raise ValueError("path/data_path and index_file must be provided.")
 
         if sample_index is None:
             sample_index = int(self.predict_config.get("sample_index", 0))
 
         dataset = LiFlowDataset(
-            data_path=data_path,
+            path=path,
             index_file=index_file,
             time_delay_steps=self.predict_config.get("time_delay_steps", 100),
             prior_scale_li=self.predict_config.get("prior_scale_li", (1.0, 10.0)),
@@ -111,7 +107,10 @@ class IntegratorPredictor:
             )
 
         sample = dataset[sample_index]
-        batch = _to_tensor(DefaultCollator()([sample]))
+        batch = DefaultCollator()([sample])
+        for key, value in list(batch.items()):
+            if isinstance(value, np.ndarray):
+                batch[key] = paddle.to_tensor(value)
 
         if self.eval_with_no_grad:
             with paddle.no_grad():
