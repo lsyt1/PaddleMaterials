@@ -34,7 +34,10 @@ Model:
     ref_temp: 1000.0
     prediction_mode: velocity
 
-Metric: null
+Metric:
+  velocity:
+    __class_name__: LiFlowMSE
+    __init_params__: {}
 
 Optimizer:
   __class_name__: Adam

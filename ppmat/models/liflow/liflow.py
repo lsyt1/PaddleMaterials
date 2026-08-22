@@ -175,17 +175,22 @@ class LiFlow(nn.Layer):
             vector = vector + vector_update
         return (vector * self.output_gate(scalar).unsqueeze(1)).sum(axis=-1)
 
-    def forward(self, batch_data):
+    def _forward(self, batch_data):
         prediction = self._velocity(batch_data)
         target = batch_data["target"]
         if self.prediction_mode == "data":
             target = batch_data["positions_2"] - batch_data["positions_1"]
-        atom_loss = paddle.sum((prediction - target) ** 2, axis=-1)
-        loss = paddle.mean(atom_loss)
+        return {"velocity": prediction, "target": target}
+
+    def forward(self, batch_data):
+        pred_dict = self._forward(batch_data)
+        atom_loss = paddle.sum(
+            (pred_dict["velocity"] - pred_dict["target"]) ** 2, axis=-1
+        )
         return {
-            "loss_dict": {"loss": loss},
-            "pred_dict": {"velocity": prediction, "target": target},
+            "loss_dict": {"loss": paddle.mean(atom_loss)},
+            "pred_dict": pred_dict,
         }
 
     def predict(self, batch_data):
-        return self.forward(batch_data)["pred_dict"]
+        return self._forward(batch_data)
