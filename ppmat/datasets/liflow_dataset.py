@@ -70,8 +70,7 @@ class LiFlowDataset(Dataset):
     scaling in the reference implementation).
 
     Args:
-        path (str): Root directory of the LiFlow dataset. If the directory does not
-            exist, a download hint for the Zenodo record is logged. Defaults to
+        path (str): Root directory of the LiFlow dataset. Defaults to
             ``"./data/liflow"``.
         index_file (str): Index CSV file name or absolute path. Relative paths are
             resolved under ``path``. Defaults to ``train_800K.csv``.
@@ -98,9 +97,7 @@ class LiFlowDataset(Dataset):
     """
 
     name = "liflow"
-    # 官方数据为 Zenodo 分卷包，无法用单文件 get_datasets_path_from_url 一键下载
-    url = "https://zenodo.org/records/14889658"
-    doi = "https://doi.org/10.5281/zenodo.14889658"
+    url = None
 
     def __init__(
         self,
@@ -119,15 +116,7 @@ class LiFlowDataset(Dataset):
         super().__init__()
 
         if not osp.exists(path):
-            logger.message(
-                f"The dataset is not found at {path}. Please download all "
-                f"data.tar.gz.part.* files from {self.url} (DOI: {self.doi}), "
-                f"merge them with `cat data.tar.gz.part.* > data.tar.gz`, extract "
-                f"into '{path}', then retry."
-            )
-            raise FileNotFoundError(
-                f"LiFlow dataset path not found: {path}. Download from {self.url}"
-            )
+            raise FileNotFoundError(f"LiFlow dataset path not found: {path}")
 
         self.path = path
         index_path = index_file

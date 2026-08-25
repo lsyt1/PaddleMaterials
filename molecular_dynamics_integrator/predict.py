@@ -4,7 +4,7 @@
 
 import argparse
 
-from ppmat.predictor.liflow_predictor import LiFlowPredictor
+from ppmat.predictor.integrator_predictor import IntegratorPredictor
 
 
 if __name__ == "__main__":
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--sample_index", type=int, default=None)
     args = parser.parse_args()
 
-    predictor = LiFlowPredictor(
+    predictor = IntegratorPredictor(
         model_name=args.model_name,
         weights_name=args.weights_name,
         config_path=args.config_path,

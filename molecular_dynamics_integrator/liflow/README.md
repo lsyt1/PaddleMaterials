@@ -4,99 +4,73 @@
 
 ## Abstract
 
-LiFlow is a generative framework for accelerating molecular dynamics simulations of crystalline materials. It learns distributions of atomic displacements from reference trajectories and uses a propagator and a corrector to advance atomic configurations over time. The method targets long-timescale atomic transport while preserving the structural statistics observed in molecular dynamics trajectories.
+LiFlow is a flow-matching framework for accelerating molecular dynamics simulations of crystalline materials. It learns atomic displacement fields from reference trajectories and uses two complementary components:
 
-## Datasets
+- The **propagator** advances atomic configurations over a coarse simulation interval.
+- The **corrector** refines the propagated configuration with a noise-conditioned flow.
 
-| Dataset | Description | Download |
-|---------|-------------|----------|
-| Universal MLIP / LGPS | Official LiFlow trajectory data | [Zenodo 14889658](https://zenodo.org/records/14889658) ([DOI](https://doi.org/10.5281/zenodo.14889658)) |
-| LPS | Available from the original authors upon request | — |
+The model conditions the atomic velocity field on element types, periodic positions, simulation time, and temperature. This design targets long-timescale atomic transport while preserving the structural statistics of molecular dynamics trajectories.
 
-Download every `data.tar.gz.part.*` file from Zenodo, then merge and extract into `data/liflow`:
+In PaddleMaterials, the LiFlow implementation is organized as follows:
 
-```bash
-cat data.tar.gz.part.* > data.tar.gz
-mkdir -p data/liflow
-tar -xvf data.tar.gz -C data/liflow
-```
+- `ppmat/datasets/liflow_dataset.py`: trajectory-pair dataset and structure cache.
+- `ppmat/models/liflow/liflow.py`: Paddle LiFlow model with `_forward`, `forward`, and `predict` interfaces.
+- `ppmat/predictor/integrator_predictor.py`: `IntegratorPredictor` based on `BasePredictor`.
+- `molecular_dynamics_integrator/train.py`: shared PaddleMaterials training entry.
+- `molecular_dynamics_integrator/predict.py`: shared integrator prediction entry.
 
-Each dataset directory contains:
+## Dataset
 
-| File | Description |
-|------|-------------|
-| `element_index.npy` | Atomic species indices with shape `[n_elements]` |
-| `atomic_numbers.npy` | Atomic numbers indexed by structure name; each value has shape `[n_atoms]` |
-| `lattice.npy` | Lattice matrices indexed by structure name; each value has shape `[3, 3]` |
-| `positions_{temp}K.npz` | Position trajectories indexed by structure name; each value has shape `[n_frames, n_atoms, 3]` |
-| `{train,test}_{temp}K.csv` | Training and testing trajectory indices |
+LiFlow consumes preprocessed molecular dynamics trajectory data. Each dataset directory contains atomic species, lattice, position trajectories, and train/test trajectory-index CSV files. The dataset loader samples two frames from each trajectory and constructs the model inputs, prior noise, and displacement target. Dataset files are distributed separately from the source code.
 
-CSV columns include `name`, `temp`, `t_start`, `t_end`, `comp`, `msd_t_Li`, `msd_t_frame`, `prior_Li`, and `prior_frame`. See the [original LiFlow repository](https://github.com/learningmatter-mit/liflow) for definitions and dataset-specific preparation details.
-
-## Models
-
-LiFlow uses two flow-matching models:
-
-- The **propagator** predicts atomic displacements over a coarse simulation interval.
-- The **corrector** refines propagated structures using a noise-conditioned flow.
-
-Both models operate on periodic crystal structures and condition the predicted atomic velocity field on atomic species, positions, simulation time, and temperature.
-
-## Results
-
-| Model | Dataset | Metric | Paddle result | Config | Checkpoint / Log |
-|-------|---------|--------|---------------|--------|------------------|
-| LiFlow | Universal / LGPS | Pending evaluation | Pending | [liflow_universal](configs/liflow_universal.yaml) | [checkpoint](https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/molecular_dynamics_integrator/liflow/liflow_universal.zip) |
-
-### Training
+## Training
 
 ```bash
-# multi-gpu training
 python -m paddle.distributed.launch --gpus="0,1,2,3" \
   molecular_dynamics_integrator/train.py \
   -c molecular_dynamics_integrator/liflow/configs/liflow_universal.yaml
+```
 
-# single-gpu training
+For a single device:
+
+```bash
 python molecular_dynamics_integrator/train.py \
   -c molecular_dynamics_integrator/liflow/configs/liflow_universal.yaml
 ```
 
-### Validation
+## Evaluation
 
 ```bash
 python molecular_dynamics_integrator/train.py \
   -c molecular_dynamics_integrator/liflow/configs/liflow_universal.yaml \
   Global.do_eval=True Global.do_train=False Global.do_test=False \
-  Trainer.pretrained_model_path='your_model.pdparams'
+  Trainer.pretrained_model_path=path/to/model.pdparams
 ```
 
-### Testing
+The configured evaluation metric is the mean squared error between the predicted and reference displacement fields. The command above reports the evaluation value when run with the released checkpoint and dataset.
 
-```bash
-python molecular_dynamics_integrator/train.py \
-  -c molecular_dynamics_integrator/liflow/configs/liflow_universal.yaml \
-  Global.do_test=True Global.do_train=False Global.do_eval=False \
-  Trainer.pretrained_model_path='your_model.pdparams'
-```
+The released checkpoint and logs are available at:
 
-### Prediction
+`https://paddle-org.bj.bcebos.com/paddlematerials/checkpoints/molecular_dynamics_integrator/liflow/liflow_universal.zip`
 
-Mode 1: local config and checkpoint
+## Prediction
+
+Use a local configuration and checkpoint:
 
 ```bash
 python molecular_dynamics_integrator/predict.py \
   --config_path molecular_dynamics_integrator/liflow/configs/liflow_universal.yaml \
-  --checkpoint_path your_model.pdparams \
-  --data_path data/liflow \
+  --checkpoint_path path/to/model.pdparams \
+  --data_path path/to/liflow \
   --index_file test_800K.csv
 ```
 
-Mode 2: registered pretrained model (auto-download from BCE)
+A registered checkpoint can be used after `liflow_universal` is added to the model registry:
 
 ```bash
 python molecular_dynamics_integrator/predict.py \
   --model_name liflow_universal \
-  --data_path data/liflow \
+  --data_path path/to/liflow \
   --index_file test_800K.csv
 ```
 

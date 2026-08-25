@@ -176,21 +176,25 @@ class LiFlow(nn.Layer):
         return (vector * self.output_gate(scalar).unsqueeze(1)).sum(axis=-1)
 
     def _forward(self, batch_data):
-        prediction = self._velocity(batch_data)
-        target = batch_data["target"]
-        if self.prediction_mode == "data":
-            target = batch_data["positions_2"] - batch_data["positions_1"]
-        return {"velocity": prediction, "target": target}
+        return self._velocity(batch_data)
 
-    def forward(self, batch_data):
-        pred_dict = self._forward(batch_data)
-        atom_loss = paddle.sum(
-            (pred_dict["velocity"] - pred_dict["target"]) ** 2, axis=-1
-        )
-        return {
-            "loss_dict": {"loss": paddle.mean(atom_loss)},
-            "pred_dict": pred_dict,
-        }
+    def forward(self, batch_data, return_loss=True, return_prediction=True):
+        assert (
+            return_loss or return_prediction
+        ), "At least one of return_loss or return_prediction must be True."
+        prediction = self._forward(batch_data)
 
+        loss_dict = {}
+        if return_loss:
+            target = batch_data["target"]
+            if self.prediction_mode == "data":
+                target = batch_data["positions_2"] - batch_data["positions_1"]
+            atom_loss = paddle.sum((prediction - target) ** 2, axis=-1)
+            loss_dict["loss"] = paddle.mean(atom_loss)
+
+        pred_dict = {"target": prediction} if return_prediction else {}
+        return {"loss_dict": loss_dict, "pred_dict": pred_dict}
+
+    @paddle.no_grad()
     def predict(self, batch_data):
-        return self._forward(batch_data)
+        return {"target": self._forward(batch_data)}

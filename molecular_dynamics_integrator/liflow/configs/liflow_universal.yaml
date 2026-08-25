@@ -35,8 +35,8 @@ Model:
     prediction_mode: velocity
 
 Metric:
-  velocity:
-    __class_name__: LiFlowMSE
+  target:
+    __class_name__: paddle.nn.MSELoss
     __init_params__: {}
 
 Optimizer:

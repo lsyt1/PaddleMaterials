@@ -2,6 +2,6 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 
-from ppmat.predictor.liflow_predictor import LiFlowPredictor
+from ppmat.predictor.integrator_predictor import IntegratorPredictor
 
-__all__ = ["LiFlowPredictor"]
+__all__ = ["IntegratorPredictor"]
