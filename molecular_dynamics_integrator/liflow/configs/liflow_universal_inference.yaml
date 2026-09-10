@@ -1,0 +1,49 @@
+# Copyright (c) 2026 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# LiFlow universal trajectory inference configuration.
+#
+# ``IntegratorPredictor`` loads the propagator and the corrector strictly
+# (``strict_weights=True``) from local config/checkpoint pairs and integrates a
+# future-free trajectory from an initial structure in ``initial_structure.npz``.
+#
+# The checkpoint paths below point to the standard per-instance training output
+# layout (``molecular_dynamics_integrator/train.py`` writes ``best.pdparams``
+# under a timestamp-suffixed ``output_dir``).  Replace them with the actual
+# trained/strictly converted checkpoints before running
+# ``molecular_dynamics_integrator/predict.py``.
+
+Global:
+  do_eval: true
+  do_test: false
+
+Predict:
+  propagator_config: output/liflow_universal_propagator/config.yaml
+  propagator_checkpoint: output/liflow_universal_propagator/checkpoints/best.pdparams
+  corrector_config: output/liflow_universal_corrector/config.yaml
+  corrector_checkpoint: output/liflow_universal_corrector/checkpoints/best.pdparams
+  cutoff: 5.0
+  periodic: true
+  temperature: 800.0
+  steps: 25
+  flow_steps: 10
+  solver: euler
+  corrector_every: 1
+  seed: 42
+  eval_with_no_grad: true
+
+Execution:
+  backend: eager
+  __init_params__:
+    full_graph: false

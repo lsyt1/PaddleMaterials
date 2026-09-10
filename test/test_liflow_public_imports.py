@@ -68,3 +68,9 @@ def test_liflow_metric_is_public():
     from ppmat.metrics import LiFlowMSE
 
     assert LiFlowMSE is not None
+
+
+def test_integrator_predictor_is_public():
+    from ppmat.predictor import IntegratorPredictor
+
+    assert IntegratorPredictor is not None
