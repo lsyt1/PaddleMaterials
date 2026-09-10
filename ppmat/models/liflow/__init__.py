@@ -14,6 +14,7 @@
 
 """LiFlow models: register in this package and re-export from ppmat.models."""
 
+from ppmat.models.liflow.dual_painn import DualPaiNN
 from ppmat.models.liflow.layers import BesselBasis
 from ppmat.models.liflow.layers import CosineCutoff
 from ppmat.models.liflow.layers import DualMessageBlock
@@ -28,4 +29,5 @@ __all__ = [
     "DualMessageBlock",
     "UpdateBlock",
     "GatedEquivariantBlock",
+    "DualPaiNN",
 ]
