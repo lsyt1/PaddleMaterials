@@ -154,6 +154,10 @@ log/*
 output/*
 !output/traffic/
 !output/traffic/*
+
+# LiFlow conversion artifacts (large local checkpoints, built by convert_weights)
+artifacts/
+artifacts/*
 experimental/output/*
 experimental/output
 experimental/data

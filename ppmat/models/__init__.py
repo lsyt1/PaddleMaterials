@@ -260,6 +260,7 @@ def build_model_from_name(
     model_name: str,
     weights_name: Optional[str] = None,
     model_config_modifier: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
+    strict_weights: bool = False,
 ):
     extracted_path = download.get_weights_path_from_url(MODEL_REGISTRY[model_name])
     path = resolve_model_package_dir(model_name, extracted_path)
@@ -277,6 +278,6 @@ def build_model_from_name(
     vocab = build_vocab(config.get("Vocabulary"))
     model = build_model(model_config, vocab=vocab)
 
-    save_load.load_pretrain(model, path, weights_name)
+    save_load.load_pretrain(model, path, weights_name, strict=strict_weights)
 
     return model, config
