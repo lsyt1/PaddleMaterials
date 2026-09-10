@@ -15,10 +15,12 @@
 """Convert original PyTorch LiFlow checkpoints into strict-loadable Paddle weights.
 
 The original checkpoints are Lightning ``.ckpt`` files whose model state uses a
-``model.`` prefix.  Paddle weights must load with ``strict_weights=True`` into
-:class:`ppmat.models.liflow.DualPaiNN`, so the conversion must:
+``model.`` prefix holding the raw ``DualPaiNN`` parameters.  The registered
+package is :class:`ppmat.models.liflow.LiFlow`, whose ``state_dict`` exposes the
+same parameters under a ``network.`` prefix.  So the conversion must:
 
-- strip the Lightning ``model.``/``network.`` prefix,
+- map each torch key onto the corresponding ``LiFlow`` (``network.*``) key by
+  ignoring the ``model.``/``network.`` prefix,
 - transpose frame-linear ``Linear`` weights (torch stores ``[out, in]`` while
   paddle stores ``[in, out]``),
 - keep embedding weights and scalar buffers (``freqs``, ``prefactor``,
@@ -249,15 +251,18 @@ def convert_state(
     out: Dict[str, dict] = {}
     missing, unexpected, shape_mismatch = [], [], []
 
+    stripped_target = {_strip_prefix(name) for name in target_state_dict}
+
+    # Index source arrays by their framework/prefix-stripped name so that a torch
+    # key such as ``model.messages.0.linear_W.weight`` can be laid onto the Paddle
+    # ``LiFlow`` key ``network.messages.0.linear_W.weight``.
+    src_by_stripped: Dict[str, np.ndarray] = {}
+    for key, value in arrays.items():
+        src_by_stripped.setdefault(_strip_prefix(key), np.asarray(value))
+
     for name, expected in target_state_dict.items():
-        prefixed_candidates = [name]
-        for prefix in MODULE_PREFIXES:
-            prefixed_candidates.append(f"{prefix}{name}")
-        src = None
-        for cand in prefixed_candidates:
-            if cand in arrays:
-                src = np.asarray(arrays[cand])
-                break
+        core = _strip_prefix(name)
+        src = src_by_stripped.get(core)
         if src is None:
             missing.append(name)
             continue
@@ -265,8 +270,8 @@ def convert_state(
 
         should_transpose = (
             src.ndim == 2
-            and name.endswith(".weight")
-            and not name.startswith("atom_embedding")
+            and core.endswith(".weight")
+            and not core.startswith("atom_embedding")
         )
         if should_transpose and tuple(src.T.shape) == tuple(expected.shape):
             out[name] = {"array": np.ascontiguousarray(src.T), "transposed": True}
@@ -281,7 +286,7 @@ def convert_state(
 
     for key in arrays:
         stripped = _strip_prefix(key)
-        if stripped not in target_state_dict:
+        if stripped not in stripped_target:
             unexpected.append(stripped)
 
     if missing or unexpected or shape_mismatch:
@@ -377,10 +382,13 @@ def convert_checkpoint(
 
 
 def _build_dual_painn(model_cfg: Dict[str, Any]):
-    from ppmat.models.liflow.dual_painn import DualPaiNN
+    from ppmat.models.liflow.liflow import LiFlow
 
     cfg = {k: model_cfg[k] for k in DUAL_PAINN_CFG_KEYS}
-    return DualPaiNN(**cfg)
+    # Build the registered wrapper (``LiFlow``) so the produced keys carry the
+    # ``network.`` prefix of ``LiFlow.state_dict()``, which is what the model
+    # package strict-loads into.
+    return LiFlow(**cfg)
 
 
 def main() -> None:
