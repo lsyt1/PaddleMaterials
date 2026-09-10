@@ -21,6 +21,7 @@ from ppmat.models.liflow.layers import DualMessageBlock
 from ppmat.models.liflow.layers import GatedEquivariantBlock
 from ppmat.models.liflow.layers import GaussianFourierBasis
 from ppmat.models.liflow.layers import UpdateBlock
+from ppmat.models.liflow.liflow import LiFlow
 
 __all__ = [
     "GaussianFourierBasis",
@@ -30,4 +31,5 @@ __all__ = [
     "UpdateBlock",
     "GatedEquivariantBlock",
     "DualPaiNN",
+    "LiFlow",
 ]

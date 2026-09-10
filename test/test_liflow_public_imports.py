@@ -48,3 +48,11 @@ def test_existing_public_symbols_are_preserved():
             PotentialPredictor,
         )
     )
+
+
+def test_liflow_models_are_public():
+    from ppmat.models import DualPaiNN
+    from ppmat.models import LiFlow
+
+    assert DualPaiNN is not None
+    assert LiFlow is not None
