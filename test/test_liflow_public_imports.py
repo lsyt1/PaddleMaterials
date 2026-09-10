@@ -56,3 +56,9 @@ def test_liflow_models_are_public():
 
     assert DualPaiNN is not None
     assert LiFlow is not None
+
+
+def test_liflow_dataset_is_public():
+    from ppmat.datasets import LiFlowDataset
+
+    assert LiFlowDataset is not None

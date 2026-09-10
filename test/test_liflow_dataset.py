@@ -21,9 +21,24 @@ four stochastic priors.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
+import pytest
 
 from ppmat.datasets.collate_fn import LiFlowCollator
+from ppmat.datasets.liflow_dataset import LiFlowDataset
+from ppmat.models.liflow.prior import AdaptiveMaxwellBoltzmannPrior
+
+
+@pytest.fixture()
+def mini_dataset_path() -> Path:
+    return (
+        Path(__file__).resolve().parent
+        / "fixtures"
+        / "liflow"
+        / "dataset_mini"
+    )
 
 
 def make_sample(num_atoms, edge_index, temperature=800.0, flow_time=0.5):
@@ -109,3 +124,59 @@ def test_liflow_collator_rejects_inconsistent_fields():
         pass
     else:
         raise AssertionError("samples with different fields must raise ValueError")
+
+
+# -- Task 7: deterministic cached dataset and seeded priors -------------------
+
+
+def test_validation_sample_is_deterministic(mini_dataset_path):
+    first = LiFlowDataset(path=mini_dataset_path, split="val", seed=42)[0]
+    second = LiFlowDataset(path=mini_dataset_path, split="val", seed=42)[0]
+    for key in (
+        "start_positions",
+        "end_positions",
+        "prior",
+        "flow_time",
+        "edge_index",
+        "shifts",
+    ):
+        np.testing.assert_array_equal(first[key], second[key])
+
+
+def test_train_validation_test_names_are_disjoint(mini_dataset_path):
+    splits = {
+        name: set(LiFlowDataset(path=mini_dataset_path, split=name).sample_ids)
+        for name in ("train", "val", "test")
+    }
+    assert splits["train"].isdisjoint(splits["val"])
+    assert splits["train"].isdisjoint(splits["test"])
+    assert splits["val"].isdisjoint(splits["test"])
+
+
+def test_cache_reused_without_rebuilding(mini_dataset_path, monkeypatch):
+    LiFlowDataset(path=mini_dataset_path, split="val", overwrite=True)
+    monkeypatch.setattr(
+        LiFlowDataset,
+        "_build_cache",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("rebuilt")),
+    )
+    # Cache already matches the frozen split + config, so it must not rebuild.
+    LiFlowDataset(path=mini_dataset_path, split="val", overwrite=False)
+
+
+def test_adaptive_maxwell_boltzmann_prior_is_seeded():
+    first = AdaptiveMaxwellBoltzmannPrior(
+        scale=[[1.0, 10.0], [0.316, 3.16]], seed=42
+    )
+    second = AdaptiveMaxwellBoltzmannPrior(
+        scale=[[1.0, 10.0], [0.316, 3.16]], seed=42
+    )
+    kwargs = {
+        "temperature": 800.0,
+        "atomic_numbers": np.array([3, 8], dtype=np.int64),
+        "masses": np.array([6.94, 15.999], dtype=np.float64),
+        "scale_Li_index": 1,
+        "scale_frame_index": 0,
+        "shape": (2, 3),
+    }
+    np.testing.assert_array_equal(first.sample(**kwargs), second.sample(**kwargs))
