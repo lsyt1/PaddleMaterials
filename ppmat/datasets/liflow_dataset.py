@@ -40,6 +40,7 @@ from ppmat.models.liflow.prior import Prior
 
 # Validation expands each sample over these fixed flow times (11-point grid).
 VALIDATION_TIMES = np.linspace(0.0, 1.0, 11, dtype=np.float32)
+_VALIDATION_N = int(VALIDATION_TIMES.shape[0])
 
 _INDEX_COLUMNS = {
     "name",
@@ -121,17 +122,35 @@ class LiFlowDataset:
     # -- dataset protocol --------------------------------------------------
 
     def __len__(self) -> int:
+        if self.split == "val":
+            return len(self._df) * _VALIDATION_N
         return len(self._df)
 
     def __getitem__(self, idx: int) -> dict[str, Any]:
+        idx = int(idx)
         if self._from_cache:
-            return self._load_sample_from_cache(int(idx))
-        return self._build_sample(int(idx))
+            return self._load_sample_from_cache(idx)
+        return self._build_sample(idx)
 
     # -- sample construction -----------------------------------------------
 
+    def _resolve_index(self, idx: int) -> tuple[int, int | None]:
+        """Map an external index to ``(row_index, time_index)``.
+
+        Validation expands each row over the 11 fixed ``flow_time`` values; the
+        other splits map one-to-one and use a stochastic flow time.
+        """
+        if self.split == "val":
+            return idx // _VALIDATION_N, idx % _VALIDATION_N
+        return idx, None
+
     def _build_sample(self, idx: int) -> dict[str, Any]:
-        row = self._df.iloc[idx]
+        row_idx, time_idx = self._resolve_index(idx)
+
+        # The endpoint pair is fixed per row: derive a row-local seed so all 11
+        # validation times share the same trajectory window.
+        row_rng = np.random.default_rng(self.seed + row_idx)
+        row = self._df.iloc[row_idx]
         name = str(row["name"])
         temp = float(row["temp"])
         atomic_numbers = np.asarray(self.atomic_numbers[name], dtype=np.int64)
@@ -142,12 +161,12 @@ class LiFlowDataset:
 
         t_start = int(row["t_start"])
         t_end = int(row["t_end"])
-        if self.split == "val":
-            flow_time = VALIDATION_TIMES[idx % len(VALIDATION_TIMES)]
+        if time_idx is not None:
+            flow_time = VALIDATION_TIMES[time_idx]
         else:
             flow_time = self.rng.uniform(0.0, 1.0)
         start_time = int(
-            self.rng.integers(t_start, t_end - self.time_delay_steps + 1)
+            row_rng.integers(t_start, t_end - self.time_delay_steps + 1)
         )
         end_time = start_time + self.time_delay_steps
 
@@ -225,7 +244,7 @@ class LiFlowDataset:
             return False
         if manifest != self._manifest_config():
             return False
-        if len(list(cd.glob("sample_*.npz"))) != len(self._df):
+        if len(list(cd.glob("sample_*.npz"))) != len(self):
             return False
         return True
 
@@ -236,7 +255,7 @@ class LiFlowDataset:
             stale.unlink()
         (cd / "manifest.json").unlink(missing_ok=True)
         (cd / "completed.flag").unlink(missing_ok=True)
-        for i in range(len(self._df)):
+        for i in range(len(self)):
             sample = self._build_sample(i)
             np.savez(cd / f"sample_{i}.npz", **_encode(sample))
         (cd / "manifest.json").write_text(

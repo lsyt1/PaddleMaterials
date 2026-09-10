@@ -62,3 +62,9 @@ def test_liflow_dataset_is_public():
     from ppmat.datasets import LiFlowDataset
 
     assert LiFlowDataset is not None
+
+
+def test_liflow_metric_is_public():
+    from ppmat.metrics import LiFlowMSE
+
+    assert LiFlowMSE is not None
