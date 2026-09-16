@@ -60,6 +60,7 @@ and timings.
 | `MatterGen`, `MatterGenWithCondition` | `denoise_step` | SOT | unconditional and conditional sampling |
 | `MolecularGraphFormer` | `graph_encoder`, `denoise_step` | SOT | no standalone registered workflow |
 | `NMRNetCLIP` | `graph_encoder`, `spectrum_encoder` | SOT | no standalone registered workflow |
+| `LiFlow` | `forward` | SOT | prediction and training |
 | `DiffPrior` | `denoise_step` | SOT | no standalone registered workflow |
 | `DiffNMR` | `spectrum_encoder`, `denoise_step` | SOT | reverse diffusion |
 | `InfGCN` | none | eager only | CINN unavailable |
