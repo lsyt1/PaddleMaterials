@@ -23,7 +23,7 @@ Run it in the reference torch environment:
 
     python scripts/generate_liflow_reference_model.py \
         --output test/fixtures/liflow/reference_model.npz \
-        --reference-root D:\\experiments\\liflow_reference
+        --reference-root liflow_reference
 
 The reference commit is pinned to the same value as the layer generator.
 """

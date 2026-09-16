@@ -426,7 +426,7 @@ benchmark script under the same environment to reproduce them.
   uploaded to object storage; numeric result tables for the registered-weight
   MSD/RDF runs will be added only after those assets are published and real runs
   are produced. Do not treat the absence of tables as "skipped".
-- **CINN admission platform.** CINN runs require Linux + CUDA; the 
+- **CINN admission platform.** CINN runs require Linux + CUDA; the
   Windows/CPU pytest environment marks the CINN workflow tests skipped.
 - **Windows `import paddle`.** Requires `VCOMP140.DLL` (MSVC OpenMP). Prefix
   `sklearn.libs` (and the nvidia runtime dirs) on `PATH` before launching
