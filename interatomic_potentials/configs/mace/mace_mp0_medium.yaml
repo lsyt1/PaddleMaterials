@@ -55,14 +55,20 @@ Optimizer:
 
 Metric:
   energy_per_atom:
-    __class_name__: MAEMetric
-    __init_params__: {}
+    __class_name__: IgnoreNanMetricWrapper
+    __init_params__:
+      __class_name__: paddle.nn.L1Loss
+      __init_params__: {}
   force:
-    __class_name__: MAEMetric
-    __init_params__: {}
+    __class_name__: IgnoreNanMetricWrapper
+    __init_params__:
+      __class_name__: paddle.nn.L1Loss
+      __init_params__: {}
   stress:
-    __class_name__: MAEMetric
-    __init_params__: {}
+    __class_name__: IgnoreNanMetricWrapper
+    __init_params__:
+      __class_name__: paddle.nn.L1Loss
+      __init_params__: {}
 
 Dataset:
   train:

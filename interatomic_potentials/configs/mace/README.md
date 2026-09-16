@@ -109,9 +109,9 @@ python interatomic_potentials/train.py -c interatomic_potentials/configs/mace/ma
 ### Prediction
 ```bash
 # Mode 1: Use pretrained model
-python interatomic_potentials/predict.py --model_name='mace_mp0_medium' --cif_file_path='./interatomic_potentials/example_data/cifs/'
+python interatomic_potentials/predict.py --model_name='mace_mp0_medium' --input_format=cif --input_path='./interatomic_potentials/example_data/cifs/'
 # Mode 2: Use custom checkpoint
-python interatomic_potentials/predict.py --config_path='interatomic_potentials/configs/mace/mace_mp0_medium.yaml' --checkpoint_path="your checkpoint path(*.pdparams)"
+python interatomic_potentials/predict.py --config_path='interatomic_potentials/configs/mace/mace_mp0_medium.yaml' --checkpoint_path="your checkpoint path(*.pdparams)" --input_format=cif --input_path='./interatomic_potentials/example_data/cifs/'
 ```
 
 ## Citation
