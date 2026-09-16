@@ -66,7 +66,9 @@ class MaxwellBoltzmannPrior(Prior):
         self.scale = scale
         self.rng = np.random.default_rng(seed)
 
-    def sample(self, temperature: float, masses: np.ndarray, shape: tuple) -> np.ndarray:
+    def sample(
+        self, temperature: float, masses: np.ndarray, shape: tuple
+    ) -> np.ndarray:
         scale = self.scale * np.sqrt(units.kB * float(temperature) / masses)
         return self.rng.normal(scale=scale[:, None], size=shape)
 

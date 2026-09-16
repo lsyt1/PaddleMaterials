@@ -98,6 +98,4 @@ def unwrap_trajectory(
     frac_diff = np.diff(positions, axis=0) @ np.linalg.inv(lattice)
     frac_diff_unwrap = frac_diff - np.floor(frac_diff + 0.5)
     diff_unwrap = frac_diff_unwrap @ lattice
-    return np.cumsum(
-        np.concatenate((positions[0, None], diff_unwrap), axis=0), axis=0
-    )
+    return np.cumsum(np.concatenate((positions[0, None], diff_unwrap), axis=0), axis=0)

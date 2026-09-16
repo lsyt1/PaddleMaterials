@@ -141,7 +141,9 @@ class IntegratorPredictor:
             [flow_positions], lattice, cutoff=self.cutoff, periodic=self.periodic
         )
         batch_data = {
-            "condition_positions": paddle.to_tensor(condition_positions.astype(np.float32)),
+            "condition_positions": paddle.to_tensor(
+                condition_positions.astype(np.float32)
+            ),
             "flow_positions": paddle.to_tensor(flow_positions.astype(np.float32)),
             "edge_index": paddle.to_tensor(edge_index.astype(np.int64)),
             "shifts": paddle.to_tensor(shifts.astype(np.float32)),
@@ -171,7 +173,13 @@ class IntegratorPredictor:
         t = 0.0
         for _ in range(int(flow_steps)):
             velocity = self._velocity_field(
-                condition, flow, t, atomic_numbers, lattice, temperature, self.propagator
+                condition,
+                flow,
+                t,
+                atomic_numbers,
+                lattice,
+                temperature,
+                self.propagator,
             )
             if solver == "euler":
                 flow = flow + velocity * dt
@@ -189,9 +197,7 @@ class IntegratorPredictor:
                 flow = flow + 0.5 * (velocity + next_velocity) * dt
             t += dt
         if corrector_every:
-            flow = self._refine_prediction(
-                flow, atomic_numbers, lattice, temperature
-            )
+            flow = self._refine_prediction(flow, atomic_numbers, lattice, temperature)
         return flow
 
     def _refine_prediction(

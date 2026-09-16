@@ -109,9 +109,7 @@ class LiFlowDataset:
     def _load_raw_data(self):
         self.element_index = np.load(self.path / "element_index.npy")
         with open(self.path / "atomic_numbers.npy", "rb") as handle:
-            self.atomic_numbers = np.load(
-                handle, allow_pickle=True
-            ).item()
+            self.atomic_numbers = np.load(handle, allow_pickle=True).item()
         self._positions: dict[float, dict[str, np.ndarray]] = {}
         for temp in set(self._df["temp"]):
             blob = np.load(self.path / f"positions_{int(temp)}K.npz")
@@ -165,9 +163,7 @@ class LiFlowDataset:
             flow_time = VALIDATION_TIMES[time_idx]
         else:
             flow_time = self.rng.uniform(0.0, 1.0)
-        start_time = int(
-            row_rng.integers(t_start, t_end - self.time_delay_steps + 1)
-        )
+        start_time = int(row_rng.integers(t_start, t_end - self.time_delay_steps + 1))
         end_time = start_time + self.time_delay_steps
 
         start_positions = np.asarray(positions[start_time], dtype=np.float32)

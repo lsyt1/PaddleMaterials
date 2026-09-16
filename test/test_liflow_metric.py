@@ -22,7 +22,6 @@ first would under-report the metric by a factor of three.
 
 from __future__ import annotations
 
-import numpy as np
 import paddle
 import pytest
 
@@ -54,9 +53,4 @@ def test_liflow_dataset_val_expands_to_11_times(mini_metric_path):
 def mini_metric_path():
     from pathlib import Path
 
-    return (
-        Path(__file__).resolve().parent
-        / "fixtures"
-        / "liflow"
-        / "dataset_mini"
-    )
+    return Path(__file__).resolve().parent / "fixtures" / "liflow" / "dataset_mini"

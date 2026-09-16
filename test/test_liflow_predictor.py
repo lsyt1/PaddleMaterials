@@ -66,9 +66,7 @@ def initial_sample():
 
 def test_predictor_generates_trajectory_without_future_positions(initial_sample):
     predictor = make_predictor_with_deterministic_models()
-    trajectory = predictor.run(
-        **initial_sample, steps=3, flow_steps=2, seed=42
-    )
+    trajectory = predictor.run(**initial_sample, steps=3, flow_steps=2, seed=42)
     assert trajectory.shape == (4, initial_sample["positions"].shape[0], 3)
     assert trajectory.dtype == np.float32
 
@@ -93,14 +91,10 @@ def test_predictor_rejects_unknown_solver(initial_sample):
 
 def test_predictor_centroid_is_preserved(initial_sample):
     predictor = make_predictor_with_deterministic_models()
-    trajectory = predictor.run(
-        **initial_sample, steps=2, flow_steps=2, seed=42
-    )
+    trajectory = predictor.run(**initial_sample, steps=2, flow_steps=2, seed=42)
     from ase import data as ase_data
 
-    masses = ase_data.atomic_masses[initial_sample["atomic_numbers"]].astype(
-        np.float64
-    )
+    masses = ase_data.atomic_masses[initial_sample["atomic_numbers"]].astype(np.float64)
     # the initial frame is the raw input; every generated frame is re-centered.
     for frame in trajectory[1:]:
         centroid = (frame.astype(np.float64) * masses[:, None]).sum(axis=0)

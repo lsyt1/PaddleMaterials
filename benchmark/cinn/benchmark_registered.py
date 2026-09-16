@@ -166,9 +166,7 @@ def build_workflow(model_name: str, backend: str):
             "flow_positions": paddle.to_tensor(positions + 0.1),
             "edge_index": paddle.to_tensor(edge_index.astype(np.int64)),
             "shifts": paddle.to_tensor(shifts.astype(np.float32)),
-            "elements": paddle.to_tensor(
-                np.array([2, 8, 8, 2], dtype=np.int64) - 1
-            ),
+            "elements": paddle.to_tensor(np.array([2, 8, 8, 2], dtype=np.int64) - 1),
             "node_time": paddle.full([positions.shape[0]], 0.5, dtype="float32"),
             "node_temperature": paddle.full(
                 [positions.shape[0]], 1000.0, dtype="float32"

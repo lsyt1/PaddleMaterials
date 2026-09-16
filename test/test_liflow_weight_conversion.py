@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 import paddle
 import pytest
@@ -56,8 +54,10 @@ def torch_state(model_state_dict):
     state = {}
     for name, arr in model_state_dict.items():
         prefixed = f"model.{name}"
-        if arr.ndim == 2 and name.endswith(".weight") and not name.startswith(
-            "atom_embedding"
+        if (
+            arr.ndim == 2
+            and name.endswith(".weight")
+            and not name.startswith("atom_embedding")
         ):
             state[prefixed] = arr.T.copy()
         else:
@@ -97,8 +97,7 @@ def test_convert_state_matches_key_set_and_shapes(model, torch_state, model_stat
 
 def test_convert_state_rejects_missing_key(model, model_state_dict):
     broken = {
-        k: v for k, v in model_state_dict.items()
-        if k != "messages.0.linear_W.weight"
+        k: v for k, v in model_state_dict.items() if k != "messages.0.linear_W.weight"
     }
     with pytest.raises(ValueError, match="missing"):
         convert_state(broken, model_state_dict)

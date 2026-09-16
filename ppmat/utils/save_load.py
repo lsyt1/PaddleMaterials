@@ -41,9 +41,7 @@ __all__ = [
 ]
 
 
-def _load_pretrain_from_path(
-    path: str, model: nn.Layer, strict: bool = False
-):
+def _load_pretrain_from_path(path: str, model: nn.Layer, strict: bool = False):
     """Load pretrained model from given path.
 
     Args:
@@ -62,12 +60,8 @@ def _load_pretrain_from_path(
 
     if strict:
         expected_keys = model.state_dict()
-        missing_keys = [
-            key for key in expected_keys if key not in param_state_dict
-        ]
-        unexpected_keys = [
-            key for key in param_state_dict if key not in expected_keys
-        ]
+        missing_keys = [key for key in expected_keys if key not in param_state_dict]
+        unexpected_keys = [key for key in param_state_dict if key not in expected_keys]
         shape_mismatch = [
             key
             for key in expected_keys

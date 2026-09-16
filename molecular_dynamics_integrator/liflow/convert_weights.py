@@ -67,7 +67,6 @@ import os
 from pathlib import Path
 from typing import Any
 from typing import Dict
-from typing import List
 from typing import Optional
 from typing import Tuple
 
@@ -126,9 +125,7 @@ def _extract_model_cfg(ckpt: Dict[str, Any]) -> Dict[str, Any]:
         except Exception:  # noqa: BLE001 - not an OmegaConf node
             container = None
         if isinstance(container, dict):
-            keep = {
-                k: container[k] for k in DUAL_PAINN_CFG_KEYS if k in container
-            }
+            keep = {k: container[k] for k in DUAL_PAINN_CFG_KEYS if k in container}
             if len(keep) == len(DUAL_PAINN_CFG_KEYS):
                 return keep
     # universal defaults
@@ -204,7 +201,8 @@ def load_state(npz_path: str) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
             if isinstance(val, np.ndarray):
                 val = val[()] if val.shape == () else np.asarray(val).tolist()
             model_cfg[key[len("_model_cfg/") :]] = (
-                int(val) if isinstance(val, (int, float)) and float(val).is_integer()
+                int(val)
+                if isinstance(val, (int, float)) and float(val).is_integer()
                 else val
             )
         elif isinstance(obj, np.ndarray) and obj.dtype != np.object_:
@@ -334,9 +332,7 @@ def convert_checkpoint(
     # validate on the numpy arrays (tensors are only used for saving)
     converted_arrays = {name: info["array"] for name, info in converted.items()}
     key_set_equal = set(converted_arrays) == set(target)
-    shape_ok = all(
-        converted_arrays[k].shape == target[k].shape for k in target
-    )
+    shape_ok = all(converted_arrays[k].shape == target[k].shape for k in target)
     dtype_ok = all(converted_arrays[k].dtype == target[k].dtype for k in target)
     num_parameters_target = sum(int(np.asarray(v).size) for v in target.values())
     num_parameters_converted = sum(
@@ -349,9 +345,7 @@ def convert_checkpoint(
             f"shape_ok={shape_ok}, dtype_ok={dtype_ok})"
         )
 
-    paddle_state = {
-        name: _to_tensor(arr) for name, arr in converted_arrays.items()
-    }
+    paddle_state = {name: _to_tensor(arr) for name, arr in converted_arrays.items()}
 
     audit_dict: Dict[str, Any] = {
         "output": os.path.abspath(output),
@@ -401,11 +395,10 @@ def main() -> None:
         "--state-npz",
         help="Source state_dict.npz (used instead of --input when torch is absent).",
     )
-    parser.add_argument(
-        "--output", help="Destination .pdparams file."
-    )
+    parser.add_argument("--output", help="Destination .pdparams file.")
     parser.add_argument("--audit", help="Optional audit JSON path.")
-    parser.add_argument("--dump-state",
+    parser.add_argument(
+        "--dump-state",
         action="store_true",
         help="Only dump the torch state_dict into --state-npz (requires torch).",
     )

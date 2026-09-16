@@ -33,12 +33,7 @@ from ppmat.models.liflow.prior import AdaptiveMaxwellBoltzmannPrior
 
 @pytest.fixture()
 def mini_dataset_path() -> Path:
-    return (
-        Path(__file__).resolve().parent
-        / "fixtures"
-        / "liflow"
-        / "dataset_mini"
-    )
+    return Path(__file__).resolve().parent / "fixtures" / "liflow" / "dataset_mini"
 
 
 def make_sample(num_atoms, edge_index, temperature=800.0, flow_time=0.5):
@@ -78,8 +73,12 @@ def test_liflow_collator_offsets_edges():
     np.testing.assert_array_equal(
         batch["edge_index"][:, :2], np.array([[0, 1], [1, 0]], dtype=np.int64)
     )
-    np.testing.assert_array_equal(batch["temperature"], np.array([800.0, 800.0], dtype=np.float32))
-    np.testing.assert_array_equal(batch["flow_time"], np.array([0.5, 0.5], dtype=np.float32))
+    np.testing.assert_array_equal(
+        batch["temperature"], np.array([800.0, 800.0], dtype=np.float32)
+    )
+    np.testing.assert_array_equal(
+        batch["flow_time"], np.array([0.5, 0.5], dtype=np.float32)
+    )
     assert batch["start_positions"].shape == (5, 3)
     assert batch["shifts"].shape == (4, 3)
     assert batch["lattice"].shape == (2, 3, 3)
@@ -165,12 +164,8 @@ def test_cache_reused_without_rebuilding(mini_dataset_path, monkeypatch):
 
 
 def test_adaptive_maxwell_boltzmann_prior_is_seeded():
-    first = AdaptiveMaxwellBoltzmannPrior(
-        scale=[[1.0, 10.0], [0.316, 3.16]], seed=42
-    )
-    second = AdaptiveMaxwellBoltzmannPrior(
-        scale=[[1.0, 10.0], [0.316, 3.16]], seed=42
-    )
+    first = AdaptiveMaxwellBoltzmannPrior(scale=[[1.0, 10.0], [0.316, 3.16]], seed=42)
+    second = AdaptiveMaxwellBoltzmannPrior(scale=[[1.0, 10.0], [0.316, 3.16]], seed=42)
     kwargs = {
         "temperature": 800.0,
         "atomic_numbers": np.array([3, 8], dtype=np.int64),

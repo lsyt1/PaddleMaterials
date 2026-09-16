@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 import pytest
 
@@ -53,9 +51,7 @@ def test_evaluate_trajectory_matches_reference():
     rng = np.random.default_rng(0)
     # the reference convention uses traj_ref = positions_ref[500::100], so the
     # reference must span more than 500 frames.
-    reference = np.stack(
-        [rng.normal(scale=0.1, size=(4, 3)) for _ in range(600)]
-    )
+    reference = np.stack([rng.normal(scale=0.1, size=(4, 3)) for _ in range(600)])
     prediction = reference[:30] + 1e-4
     n_frames = prediction.shape[0]
     metrics = evaluate_trajectory(prediction, reference, atomic_numbers, lattice)

@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -163,9 +162,7 @@ def main() -> None:
     atomic_numbers, lattice = _structure_from_npz(args.structure)
     prediction = np.load(args.prediction)
     reference = np.load(args.reference)
-    metrics = evaluate_trajectory(
-        prediction, reference, atomic_numbers, lattice
-    )
+    metrics = evaluate_trajectory(prediction, reference, atomic_numbers, lattice)
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w") as f:

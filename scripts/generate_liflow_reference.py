@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import os
 import platform
 
@@ -129,9 +128,7 @@ def main():
         "units": torch.nn.functional.normalize(
             torch.randn(n_edges, 3, dtype=torch.float32), dim=-1
         ),
-        "edge_index": torch.tensor(
-            [[0, 1, 2, 0], [1, 2, 0, 2]], dtype=torch.long
-        ),
+        "edge_index": torch.tensor([[0, 1, 2, 0], [1, 2, 0, 2]], dtype=torch.long),
     }
     with torch.no_grad():
         dmb_out_s, dmb_out_v = dmb(
@@ -169,9 +166,7 @@ def main():
         save[f"ub/state/{name}"] = arr
 
     # GatedEquivariantBlock ---------------------------------------------------
-    geb = L.GatedEquivariantBlock(
-        num_scalar_inputs=f, num_vector_inputs=4
-    )
+    geb = L.GatedEquivariantBlock(num_scalar_inputs=f, num_vector_inputs=4)
     eb_s = torch.randn(n_nodes, 1, f, dtype=torch.float32)
     eb_v = torch.randn(n_nodes, 3, 4, dtype=torch.float32)
     with torch.no_grad():

@@ -25,10 +25,8 @@ import json
 import os
 import os.path as osp
 from datetime import datetime
-from pathlib import Path
 
 import numpy as np
-
 from omegaconf import OmegaConf
 
 
@@ -48,7 +46,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", "-c", type=str, required=True)
     parser.add_argument("--input", "-i", type=str, required=True)
-    parser.add_argument("--output_dir", "-o", type=str, default="output/liflow_prediction")
+    parser.add_argument(
+        "--output_dir", "-o", type=str, default="output/liflow_prediction"
+    )
     parser.add_argument("--temperature", type=float, default=None)
     parser.add_argument("--steps", type=int, default=None)
     parser.add_argument("--flow_steps", type=int, default=None)
@@ -102,9 +102,7 @@ def main() -> None:
 
     os.makedirs(args.output_dir, exist_ok=True)
     np.save(osp.join(args.output_dir, "trajectory.npy"), trajectory)
-    _write_xyz(
-        osp.join(args.output_dir, "trajectory.xyz"), trajectory, atomic_numbers
-    )
+    _write_xyz(osp.join(args.output_dir, "trajectory.xyz"), trajectory, atomic_numbers)
     metadata = {
         "input": args.input,
         "temperature": temperature,

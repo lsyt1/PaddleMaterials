@@ -37,7 +37,6 @@ import platform
 
 import numpy as np
 import torch
-
 from torch_geometric.data import Data
 
 REFERENCE_COMMIT = "e6fc475361d046865f12cae1aee11c4f56c48d87"
@@ -151,7 +150,9 @@ def main():
     save["model/grad/flow_positions"] = grad_flow
 
     for key, val in MODEL_CONFIG.items():
-        save[f"model/config/{key}"] = np.array(val, dtype=DTYPE if isinstance(val, float) else np.int64)
+        save[f"model/config/{key}"] = np.array(
+            val, dtype=DTYPE if isinstance(val, float) else np.int64
+        )
 
     for name, value in model.state_dict().items():
         save[f"model/state/{name}"] = value.cpu().numpy()
@@ -162,9 +163,7 @@ def main():
     import torch_scatter
 
     print(f"wrote {args.output}")
-    print(
-        f"output[0]={output.detach().numpy()[0]}  edges={data.edge_index.shape[1]}"
-    )
+    print(f"output[0]={output.detach().numpy()[0]}  edges={data.edge_index.shape[1]}")
     manifest = {
         "commit": REFERENCE_COMMIT,
         "environment": {

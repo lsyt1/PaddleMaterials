@@ -49,9 +49,7 @@ def _make_training_batch():
         "flow_time": paddle.to_tensor([0.5], dtype="float32"),
         "temperature": paddle.to_tensor([800.0], dtype="float32"),
         "elements": paddle.to_tensor([3, 8, 1, 6], dtype="int64"),
-        "edge_index": paddle.to_tensor(
-            [[0, 1, 2, 3], [1, 2, 3, 0]], dtype="int64"
-        ),
+        "edge_index": paddle.to_tensor([[0, 1, 2, 3], [1, 2, 3, 0]], dtype="int64"),
         "shifts": paddle.zeros([4, 3], dtype="float32"),
         "batch_index": paddle.zeros([N_ATOMS], dtype="int64"),
     }
@@ -67,9 +65,7 @@ def _make_inference_batch():
             np.random.RandomState(3).uniform(2.0, 5.0, size=(N_ATOMS, 3)),
             dtype="float32",
         ),
-        "edge_index": paddle.to_tensor(
-            [[0, 1, 2, 3], [1, 2, 3, 0]], dtype="int64"
-        ),
+        "edge_index": paddle.to_tensor([[0, 1, 2, 3], [1, 2, 3, 0]], dtype="int64"),
         "shifts": paddle.zeros([4, 3], dtype="float32"),
         "elements": paddle.to_tensor([3, 8, 1, 6], dtype="int64"),
         "node_time": paddle.to_tensor([0.2, 0.2, 0.2, 0.2], dtype="float32"),

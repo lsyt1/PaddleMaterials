@@ -113,8 +113,7 @@ def model(reference, ref_state):
 @pytest.fixture(scope="module")
 def reference_batch(reference):
     return {
-        key: paddle.to_tensor(reference[f"model/{key}"]).clone()
-        for key in INPUT_KEYS
+        key: paddle.to_tensor(reference[f"model/{key}"]).clone() for key in INPUT_KEYS
     }
 
 
@@ -186,9 +185,7 @@ def rotation():
     q = rng.normal(size=3)
     q = q / np.linalg.norm(q)
     theta = 0.6
-    K = np.array(
-        [[0.0, -q[2], q[1]], [q[2], 0.0, -q[0]], [-q[1], q[0], 0.0]]
-    )
+    K = np.array([[0.0, -q[2], q[1]], [q[2], 0.0, -q[0]], [-q[1], q[0], 0.0]])
     return np.eye(3) + np.sin(theta) * K + (1.0 - np.cos(theta)) * (K @ K)
 
 
@@ -203,9 +200,7 @@ def test_dual_painn_rotation_equivariance(model, reference_batch, rotation):
     rotated["elements"] = reference_batch["elements"]
     rotated["node_time"] = reference_batch["node_time"]
     rotated["node_temperature"] = reference_batch["node_temperature"]
-    np.testing.assert_allclose(
-        model(**rotated).numpy(), expected, rtol=2e-5, atol=2e-6
-    )
+    np.testing.assert_allclose(model(**rotated).numpy(), expected, rtol=2e-5, atol=2e-6)
 
 
 # ---------------------------------------------------------------------------
@@ -221,6 +216,4 @@ def test_neighbor_list_matches_reference_fixture(reference):
         periodic=True,
     )
     np.testing.assert_array_equal(edge_index, reference["nb/edge_index"])
-    np.testing.assert_allclose(
-        shifts, reference["nb/shifts"], rtol=0.0, atol=1e-7
-    )
+    np.testing.assert_allclose(shifts, reference["nb/shifts"], rtol=0.0, atol=1e-7)

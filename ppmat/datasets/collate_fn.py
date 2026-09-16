@@ -258,9 +258,7 @@ class LiFlowCollator:
                 # Preserve each field's native dtype: ``elements`` and
                 # ``atomic_numbers`` are integer indices consumed by the element
                 # embedding and must not be coerced to float.
-                result[field] = np.concatenate(
-                    [item[field] for item in batch], axis=0
-                )
+                result[field] = np.concatenate([item[field] for item in batch], axis=0)
 
         edges = []
         for index, item in enumerate(batch):

@@ -25,7 +25,9 @@ import pytest
 from ppmat.models.liflow.layers import BesselBasis
 from ppmat.models.liflow.layers import DualMessageBlock
 
-REFERENCE_NPZ = Path(__file__).resolve().parent / "fixtures" / "liflow" / "reference_layers.npz"
+REFERENCE_NPZ = (
+    Path(__file__).resolve().parent / "fixtures" / "liflow" / "reference_layers.npz"
+)
 
 
 def _load_reference_state(layer, ref_state: dict[str, np.ndarray]):
