@@ -12,15 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""LiFlow nodal velocity metric.
-
-Matches the reference ``FlowModule.compute_loss`` at commit
-``e6fc475361d046865f12cae1aee11c4f56c48d87``: sum the squared error over the
-three Cartesian components first, then average over nodes.  This deliberately
-avoids the three-fold error one would introduce by averaging the three
-components before taking the node mean.
-"""
-
 from __future__ import annotations
 
 import paddle
@@ -29,7 +20,5 @@ __all__ = ["LiFlowMSE"]
 
 
 class LiFlowMSE:
-    """Nodal mean squared error, summed over the xyz dimensions."""
-
     def __call__(self, prediction, label):
         return paddle.mean(paddle.sum((prediction - label) ** 2, axis=-1))

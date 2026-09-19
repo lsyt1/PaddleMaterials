@@ -12,14 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pure-tensor DualPaiNN port of ``liflow/model/models.py``.
-
-The reference forward consumes a graph ``Data`` object; this port keeps identity
-of computation and of the parameter/buffer names but takes explicit tensors so the
-forward can run inside the shared CINN runtime boundary.  Attribute names mirror
-the reference exactly, so converted checkpoints load with ``strict_weights=True``.
-"""
-
 from __future__ import annotations
 
 import paddle
@@ -53,7 +45,7 @@ class DualPaiNN(nn.Layer):
         self.num_layers = num_layers
         self.r_max = r_max
         self.r_offset = r_offset
-        self.ref_temp = ref_temp  # reference temperature for scaling
+        self.ref_temp = ref_temp
 
         assert num_features % 2 == 0, "Number of features must be even"
         self.atom_embedding = nn.Embedding(num_elements, num_features)
@@ -76,13 +68,13 @@ class DualPaiNN(nn.Layer):
 
     def forward(
         self,
-        condition_positions,  # [n_nodes, 3]
-        flow_positions,  # [n_nodes, 3]
-        edge_index,  # [2, n_edges]
-        shifts,  # [n_edges, 3]
-        elements,  # [n_nodes]
-        node_time,  # [n_nodes]
-        node_temperature,  # [n_nodes]
+        condition_positions,
+        flow_positions,
+        edge_index,
+        shifts,
+        elements,
+        node_time,
+        node_temperature,
     ):
         unit_vectors_1, lengths_1 = get_unit_vectors_and_lengths(
             condition_positions, edge_index, shifts
@@ -91,7 +83,6 @@ class DualPaiNN(nn.Layer):
             flow_positions, edge_index, shifts
         )
 
-        # Compute radial basis functions
         lengths_1 = (lengths_1 + self.r_offset).clip(max=self.r_max)
         lengths_2 = (lengths_2 + self.r_offset).clip(max=self.r_max)
         radial_embeddings_1 = self.radial_embedding(lengths_1)
@@ -99,14 +90,13 @@ class DualPaiNN(nn.Layer):
         f_cut_1 = self.cutoff_fn(lengths_1)
         f_cut_2 = self.cutoff_fn(lengths_2)
 
-        # Compute initial scalar and vector features
         s_atom = self.atom_embedding(elements)
         s_time = self.time_embedding(node_time)
         s_temp = self.temp_embedding(node_temperature / self.ref_temp)
         s = s_atom + paddle.concat([s_time, s_temp], axis=-1)
-        s = s[:, None, :]  # [n_nodes, 1, n_feats]
+        s = s[:, None, :]
         positions_diff = flow_positions - condition_positions
-        v = self.linear_v(positions_diff[..., None])  # [n_nodes, 3, n_feats]
+        v = self.linear_v(positions_diff[..., None])
 
         for message, update in zip(self.messages, self.updates):
             s, v = message(

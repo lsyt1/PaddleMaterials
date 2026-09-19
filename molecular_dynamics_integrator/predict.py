@@ -1,24 +1,16 @@
 # Copyright (c) 2026 PaddlePaddle Authors. All Rights Reserved.
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Generate a future-free LiFlow trajectory from an initial structure.
-
-Input is an ``.npz`` containing ``positions``, ``atomic_numbers`` and
-``lattice``; the target ``temperature`` comes from the inference config (or a
-``--temperature`` override).  Outputs are ``trajectory.npy``,
-``trajectory.xyz`` and ``run_metadata.json`` under ``--output_dir``.
-"""
 
 import argparse
 import json
@@ -31,7 +23,6 @@ from omegaconf import OmegaConf
 
 
 def _write_xyz(path: str, trajectory: np.ndarray, atomic_numbers: np.ndarray):
-    """Write the trajectory using ASE's xyz writer."""
     from ase import Atoms
     from ase.io import write as ase_write
 
@@ -71,7 +62,6 @@ def main() -> None:
             overrides[key] = predict_cfg.get(key, default_by_key(key))
     temperature = float(overrides["temperature"])
 
-    # load the initial structure
     data = np.load(args.input)
     positions = np.asarray(data["positions"], dtype=np.float32)
     atomic_numbers = np.asarray(data["atomic_numbers"], dtype=np.int64)

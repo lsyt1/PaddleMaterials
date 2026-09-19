@@ -12,21 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generate reference tensors for the LiFlow layer port.
-
-Runs under the original PyTorch ``liflow`` reference checkout and saves the fixed
-inputs, outputs and the exact parameter/buffer arrays of each layer.  The Paddle
-side loads these arrays (strictly) and compares its own outputs within tolerance.
-Run it in the reference torch environment:
-
-    python scripts/generate_liflow_reference.py \
-        --output test/fixtures/liflow/reference_layers.npz \
-        --manifest test/fixtures/liflow/reference_manifest.json
-
-Point ``--reference-root`` at the reference checkout (or set
-``LIFLOW_REFERENCE_ROOT``).  The reference commit is pinned below.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -83,7 +68,6 @@ def main():
     save["_dtype"] = np.array(DTYPE)
     save["_reference_commit"] = np.array(REFERENCE_COMMIT)
 
-    # GaussianFourierBasis -------------------------------------------------
     gfb = L.GaussianFourierBasis(num_basis=8)
     gfb_x = torch.randn(6, 1, dtype=torch.float32)
     with torch.no_grad():
@@ -94,7 +78,6 @@ def main():
     for name, arr in _state(gfb).items():
         save[f"gfb/state/{name}"] = arr
 
-    # BesselBasis ------------------------------------------------------------
     bessel = L.BesselBasis(num_basis=4, r_max=5.0)
     bessel_x = torch.tensor([[0.5], [2.0]], dtype=torch.float32)
     with torch.no_grad():
@@ -106,7 +89,6 @@ def main():
     for name, arr in _state(bessel).items():
         save[f"bessel/state/{name}"] = arr
 
-    # CosineCutoff -----------------------------------------------------------
     cutoff = L.CosineCutoff(r_max=5.0)
     cutoff_x = torch.tensor([[1.0], [3.0], [6.0]], dtype=torch.float32)
     with torch.no_grad():
@@ -117,7 +99,6 @@ def main():
     for name, arr in _state(cutoff).items():
         save[f"cutoff/state/{name}"] = arr
 
-    # DualMessageBlock ------------------------------------------------------
     f, r, n_nodes, n_edges = 8, 4, 3, 4
     dmb = L.DualMessageBlock(num_features=f, num_radial_basis=r)
     dmb.data = {
@@ -151,7 +132,6 @@ def main():
     for name, arr in _state(dmb).items():
         save[f"dmb/state/{name}"] = arr
 
-    # UpdateBlock ------------------------------------------------------------
     ub = L.UpdateBlock(num_features=f)
     ub_s = torch.randn(n_nodes, 1, f, dtype=torch.float32)
     ub_v = torch.randn(n_nodes, 3, f, dtype=torch.float32)
@@ -165,7 +145,6 @@ def main():
     for name, arr in _state(ub).items():
         save[f"ub/state/{name}"] = arr
 
-    # GatedEquivariantBlock ---------------------------------------------------
     geb = L.GatedEquivariantBlock(num_scalar_inputs=f, num_vector_inputs=4)
     eb_s = torch.randn(n_nodes, 1, f, dtype=torch.float32)
     eb_v = torch.randn(n_nodes, 3, 4, dtype=torch.float32)

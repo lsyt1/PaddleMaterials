@@ -1,25 +1,16 @@
 # Copyright (c) 2026 PaddlePaddle Authors. All Rights Reserved.
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""LiFlow molecular dynamics integrator training entrypoint.
-
-This is the minimal task-specific entrypoint for training the LiFlow
-propagator and corrector velocity-field models.  It mirrors the shared
-``interatomic_potentials/train.py`` assembly flow: load/merge config,
-build model, dataloader, optimizer, metric, then drive the public
-``BaseTrainer``.  No LiFlow-specific training loop is introduced.
-"""
 
 import argparse
 import os
@@ -54,7 +45,6 @@ if __name__ == "__main__":
 
     args, dynamic_args = parser.parse_known_args()
 
-    # load config and merge with cli args
     config = OmegaConf.load(args.config)
     cli_config = OmegaConf.from_dotlist(dynamic_args)
     config = OmegaConf.merge(config, cli_config)
@@ -62,33 +52,26 @@ if __name__ == "__main__":
     seed = config["Trainer"].get("seed", 42)
     append_timestamp_to_output_dir(config)
 
-    # save config to output_dir, only rank 0 process will do this
     if dist.get_rank() == 0:
         os.makedirs(config["Trainer"]["output_dir"], exist_ok=True)
         config_name = os.path.basename(args.config)
         OmegaConf.save(config, osp.join(config["Trainer"]["output_dir"], config_name))
-    # convert to dict
     config = OmegaConf.to_container(config, resolve=True)
 
-    # init logger
     logger_path = osp.join(config["Trainer"]["output_dir"], "run.log")
     logger.init_logger(log_file=logger_path)
     logger.info(f"Logger saved to {logger_path}")
 
-    # set random seed
     misc.set_random_seed(seed)
     logger.info(f"Set random seed to {seed}")
 
-    # set prim eager mode
     enabled = config["Global"].get("prim_eager_enabled", False)
     white_list = config["Global"].get("prim_backward_white_list", None)
     setting_eager_mode(enabled, white_list)
 
-    # build model from config
     model_cfg = config["Model"]
     model = build_model(model_cfg)
 
-    # build dataloader from config
     set_signal_handlers()
     if config["Global"].get("do_train", True):
         train_data_cfg = config["Dataset"].get("train")
@@ -118,7 +101,6 @@ if __name__ == "__main__":
     else:
         test_loader = None
 
-    # build optimizer and learning rate scheduler from config
     if config.get("Optimizer") is not None and config["Global"].get("do_train", True):
         assert (
             train_loader is not None
@@ -135,14 +117,12 @@ if __name__ == "__main__":
     else:
         optimizer, lr_scheduler = None, None
 
-    # build metric from config
     metric_cfg = config.get("Metric")
     if metric_cfg is not None:
         metric_func = build_metric(metric_cfg)
     else:
         metric_func = None
 
-    # # initialize trainer
     trainer = BaseTrainer(
         config["Trainer"],
         model,

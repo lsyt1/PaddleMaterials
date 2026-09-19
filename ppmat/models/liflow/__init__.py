@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""LiFlow models: register in this package and re-export from ppmat.models."""
-
 from ppmat.models.liflow.dual_painn import DualPaiNN
 from ppmat.models.liflow.layers import BesselBasis
 from ppmat.models.liflow.layers import CosineCutoff

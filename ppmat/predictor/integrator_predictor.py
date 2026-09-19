@@ -12,22 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Future-free LiFlow trajectory generation.
-
-``IntegratorPredictor`` composes a propagator and a corrector velocity-field
-model (both LiFlow wrappers) and integrates a trajectory from an initial
-structure with no reference to future frames or labels.  It intentionally uses
-composition rather than inheriting ``BasePredictor``, which manages a single
-model.  Both models are configured on the same execution backend and run in eval
-mode.
-
-Generation is performed entirely outside the model: each MD step integrates the
-flow field over ``flow_steps`` substeps with an Euler or Heun solver, and applies
-a mass-weighted centroid correction.  The public ``run`` signature accepts only
-the initial geometry, temperature and seed --- it has no ``end_positions``
-argument.
-"""
-
 from __future__ import annotations
 
 from typing import Optional
@@ -45,13 +29,10 @@ DEFAULT_CUTOFF = 5.0
 
 
 def _element_indices(atomic_numbers: np.ndarray) -> np.ndarray:
-    """Map atomic numbers to 0-based element indices (periodic-table order)."""
     return np.asarray(atomic_numbers, dtype=np.int64) - 1
 
 
 class IntegratorPredictor:
-    """Generate a future-free trajectory by integrating two LiFlow models."""
-
     def __init__(
         self,
         propagator_model: Optional[paddle.nn.Layer] = None,
@@ -80,8 +61,7 @@ class IntegratorPredictor:
         self.periodic = bool(periodic)
         self.ref_temp = float(ref_temp)
 
-        # Reuse the shared backend configuration on both models so devices and
-        # execution backends stay consistent.
+        # Force a consistent eager backend on both models.
         from ppmat.utils.execution import configure_execution_backend
 
         backend = "eager"
@@ -116,8 +96,6 @@ class IntegratorPredictor:
         save_load.load_pretrain(model, checkpoint_path, strict=True)
         return model
 
-    # -- velocity field --------------------------------------------------------
-
     def _velocity_field(
         self,
         condition_positions: np.ndarray,
@@ -128,12 +106,6 @@ class IntegratorPredictor:
         temperature: float,
         model,
     ) -> np.ndarray:
-        """Return the ``[N, 3]`` velocity of the system at node_time.
-
-        The neighbourhood graph is built over the ``N`` system nodes from the
-        current flow geometry; both the condition and the flow positions share
-        this node indexing.  The model returns one velocity per node.
-        """
         assert condition_positions.shape == flow_positions.shape
         num_atoms = condition_positions.shape[0]
         elements = _element_indices(atomic_numbers)
@@ -207,7 +179,6 @@ class IntegratorPredictor:
         lattice: np.ndarray,
         temperature: float,
     ) -> np.ndarray:
-        """Refine the integrated frame with the corrector velocity field."""
         for t in (0.5, 0.0):
             velocity = self._velocity_field(
                 flow, flow, t, atomic_numbers, lattice, temperature, self.corrector
@@ -219,7 +190,6 @@ class IntegratorPredictor:
     def _apply_centroid_correction(
         positions: np.ndarray, atomic_numbers: np.ndarray
     ) -> np.ndarray:
-        """Remove the mass-weighted center-of-mass drift."""
         masses = ase_data.atomic_masses[atomic_numbers].astype(np.float32)
         total_mass = masses.sum()
         centroid = (positions * masses[:, None]).sum(axis=0) / total_mass
@@ -238,7 +208,6 @@ class IntegratorPredictor:
         corrector_every: int = 1,
         seed: int = 42,
     ) -> np.ndarray:
-        """Generate ``[generated_steps + 1, N, 3]`` trajectory from initial state."""
         positions = np.asarray(positions, dtype=np.float32)
         atomic_numbers = np.asarray(atomic_numbers, dtype=np.int64)
         lattice = np.asarray(lattice, dtype=np.float32)

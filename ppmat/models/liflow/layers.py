@@ -12,14 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A faithful PaddlePort of the reference LiFlow equivariant layers.
-
-The translation mirrors ``learningmatter-mit/liflow`` (reference commit
-``e6fc475361d046865f12cae1aee11c4f56c48d87``) ``liflow/model/layers.py``.
-Parameter and buffer names, tensor shapes and computation order are preserved so
-that converted checkpoints load with ``strict_weights=True``.
-"""
-
 from __future__ import annotations
 
 import math
@@ -41,8 +33,6 @@ __all__ = [
 
 # Adapted from yang-song/score_sde_pytorch
 class GaussianFourierBasis(nn.Layer):
-    """Gaussian Fourier embeddings for noise levels."""
-
     def __init__(self, num_basis: int):
         super().__init__()
         assert num_basis % 2 == 0
@@ -98,15 +88,15 @@ class DualMessageBlock(nn.Layer):
 
     def forward(
         self,
-        s,  # [n_nodes, 1, n_feats]
-        v,  # [n_nodes, 3, n_feats]
-        radial_embeddings_1,  # [n_edges, 1, num_radial_basis]
-        radial_embeddings_2,  # [n_edges, 1, num_radial_basis]
-        f_cut_1,  # [n_edges, 1]
-        f_cut_2,  # [n_edges, 1]
-        unit_vectors_1,  # [n_edges, 3]
-        unit_vectors_2,  # [n_edges, 3]
-        edge_index,  # [2, n_edges]
+        s,
+        v,
+        radial_embeddings_1,
+        radial_embeddings_2,
+        f_cut_1,
+        f_cut_2,
+        unit_vectors_1,
+        unit_vectors_2,
+        edge_index,
     ):
         idx_i, idx_j = edge_index[0], edge_index[1]
         n_nodes = s.shape[0]
@@ -153,11 +143,6 @@ class UpdateBlock(nn.Layer):
 
 
 class GatedEquivariantBlock(nn.Layer):
-    """Modified gated equivariant block to output a single vector.
-
-    See PaiNN paper Fig. 3 or the schnetpack.nn.equivariant module.
-    """
-
     def __init__(
         self,
         num_scalar_inputs: int,

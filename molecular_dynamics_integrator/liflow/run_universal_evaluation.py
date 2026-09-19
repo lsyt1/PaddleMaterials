@@ -1,25 +1,16 @@
 # Copyright (c) 2026 PaddlePaddle Authors. All Rights Reserved.
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Full universal evaluation matrix for LiFlow.
-
-Loops over temperatures ``(600, 800, 1000, 1200)``, seeds ``(1, 2, 3)`` and
-modes ``("propagator", "propagator_corrector")``.  Each combination reads a
-generated trajectory and the reference trajectory from disk and writes one CSV;
-the driver aggregates mean / std / failure rate across the matrix into a summary
-JSON.  Only ``800 K`` is not run.
-"""
 
 from __future__ import annotations
 
@@ -100,8 +91,7 @@ def main() -> None:
                     metrics = evaluate_trajectory(
                         prediction, reference, atomic_numbers, lattice
                     )
-                except Exception:  # noqa: BLE001 - a single combo must not
-                    # abort the matrix
+                except Exception:  # noqa: BLE001 (a single combo must not abort the matrix)
                     failures += 1
                     continue
                 row = {
@@ -112,9 +102,7 @@ def main() -> None:
                 }
                 per_row.append(row)
 
-    # per-combination CSVs (one CSV per mode x temperature summary is written too)
     import csv
-
     for temp in args.temperatures:
         for mode in args.modes:
             rows = [
@@ -129,7 +117,6 @@ def main() -> None:
                 writer.writeheader()
                 writer.writerows(rows)
 
-    # aggregate mean / std / failure rate
     aggregate = {
         "temperatures": list(args.temperatures),
         "seeds": list(args.seeds),

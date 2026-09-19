@@ -12,22 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generate the end-to-end ``DualPaiNN`` reference fixture.
-
-Runs under the original PyTorch ``liflow`` reference checkout and saves the fixed
-inputs, the forward output ``[N, 3]``, the input gradients (used by the alignment
-test) and the exact parameter/buffer arrays of the whole model.  The Paddle side
-loads the arrays (strictly) and compares output and gradients within tolerance.
-
-Run it in the reference torch environment:
-
-    python scripts/generate_liflow_reference_model.py \
-        --output test/fixtures/liflow/reference_model.npz \
-        --reference-root liflow_reference
-
-The reference commit is pinned to the same value as the layer generator.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -83,7 +67,6 @@ def main():
     model = DualPaiNN(**MODEL_CONFIG)
     model.eval()
 
-    # --- Build a small, well-separated periodic graph ---------------------
     lattice = np.eye(3, dtype=np.float64) * 8.0
     condition = np.random.uniform(2.0, 6.0, size=(N_ATOMS, 3)).astype(np.float64)
     flow = condition + np.random.uniform(-0.5, 0.5, size=(N_ATOMS, 3)).astype(
@@ -111,11 +94,9 @@ def main():
 
     assert data.edge_index.shape[1] > 0, "neighbor list must contain edges"
 
-    # Run with grad enabled so we can also capture input gradients; the output
-    # is identical to the no-grad forward because the graph is deterministic.
+    # Run with grad enabled so input gradients can be captured.
     output = model(data)
 
-    # --- Gradients w.r.t. the two endpoint position tensors ---------------
     loss = torch.sum(output**2)
     input_grads = torch.autograd.grad(
         loss, (data.positions_1, data.positions_2), retain_graph=False
@@ -123,21 +104,18 @@ def main():
     grad_condition = input_grads[0].detach().numpy()
     grad_flow = input_grads[1].detach().numpy()
 
-    # --- Assemble fixture --------------------------------------------------
     save = {
         "_seed": np.array(SEED),
         "_dtype": np.array(DTYPE),
         "_reference_commit": np.array(REFERENCE_COMMIT),
     }
 
-    # neighbor-list reference
     save["nb/positions_batch"] = condition[None].astype(DTYPE)
     save["nb/lattice"] = lattice.astype(DTYPE)
     save["nb/cutoff"] = np.array(MODEL_CONFIG["r_max"], dtype=DTYPE)
     save["nb/edge_index"] = edge_index.astype(np.int64)
     save["nb/shifts"] = shift_cart.astype(DTYPE)
 
-    # model inputs / outputs / gradients
     save["model/condition_positions"] = data.positions_1.detach().numpy()
     save["model/flow_positions"] = data.positions_2.detach().numpy()
     save["model/edge_index"] = data.edge_index.numpy()

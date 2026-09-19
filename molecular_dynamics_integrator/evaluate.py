@@ -1,31 +1,16 @@
 # Copyright (c) 2026 PaddlePaddle Authors. All Rights Reserved.
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Scientific evaluation for LiFlow trajectories (MSD, RDF MAE, final step).
-
-The semantics mirror the original ``liflow/utils/analysis.py`` and
-``liflow/experiment/test.py`` at the reference commit
-``e6fc475361d046865f12cae1aee11c4f56c48d87``:
-
-- ``calculate_msd`` sums the squared displacement over xyz and, by default,
-  returns the mean over the masked atoms of the *final* frame.
-- Li atoms are ``atomic_numbers == 3``, frame atoms are the complement.
-- RDF uses a periodic minimum-image neighbor list, ``rmax=5.0``, ``nbins=50``.
-- For a predicted trajectory of length <= 5 frames only the last frame is used
-  for RDF; otherwise frames ``[5:]`` are used.  The reference uses
-  ``positions_ref[500::100]`` for the reference RDF.
-"""
 
 from __future__ import annotations
 
@@ -41,16 +26,6 @@ def calculate_msd(
     atom_mask: np.ndarray | None = None,
     final_only: bool = True,
 ) -> np.ndarray | float:
-    """Mean squared displacement per the reference convention.
-
-    Args:
-        traj: ``[n_frame, n_atom, 3]`` trajectory.
-        atom_mask: optional boolean ``[n_atom]`` selection.
-        final_only: if True return scalar of last frame, else per-frame.
-
-    Returns:
-        Scalar (``final_only=True``) or ``[n_frame]`` array.
-    """
     traj = np.asarray(traj, dtype=np.float64)
     squared_displacements = np.sum((traj - traj[0]) ** 2, axis=-1)
     if atom_mask is not None:
@@ -66,10 +41,6 @@ def calculate_average_rdf(
     rmax: float = 5.0,
     nbins: int = 50,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Average radial distribution function using periodic minimum images.
-
-    Returns ``(r_centers, rdf)`` each of shape ``[nbins]``.
-    """
     from ase import Atoms
     from ase import neighborlist
 
@@ -118,7 +89,6 @@ def evaluate_trajectory(
     rmax: float = 5.0,
     nbins: int = 50,
 ) -> dict:
-    """Compute the reference protocol metrics for one (pred, ref) pair."""
     atomic_numbers = np.asarray(atomic_numbers, dtype=np.int64)
     li_mask = atomic_numbers == 3
     frame_mask = atomic_numbers != 3

@@ -12,14 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Stochastic displacement priors for the LiFlow propagator and corrector.
-
-Faithful PaddleMater redisport of ``liflow/utils/prior.py`` at reference commit
-``e6fc475361d046865f12cae1aee11c4f56c48d87``.  Every prior holds its own
-``np.random.default_rng(seed)`` so repeated construction with the same seed is
-fully reproducible.
-"""
-
 from __future__ import annotations
 
 import abc
@@ -39,7 +31,7 @@ __all__ = [
 class Prior(abc.ABC):
     @abc.abstractmethod
     def sample(self, shape: tuple) -> np.ndarray:
-        """Draw a displacement with the given ``[N, 3]`` shape."""
+        ...
 
 
 class NormalPrior(Prior):

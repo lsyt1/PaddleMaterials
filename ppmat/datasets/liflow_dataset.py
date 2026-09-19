@@ -12,17 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Deterministic, cached LiFlow trajectory dataset.
-
-Local-path mode mirrors the reference ``TimeDelayedPairDataset`` at commit
-``e6fc475361d046865f12cae1aee11c4f56c48d87``: it reads the universal data
-directory (``element_index.npy``, ``atomic_numbers.npy``, ``positions_{T}K.npz``,
-``lattice.npy``) together with a frozen ``{split}.csv`` index, builds a
-variable-size endpoint sample consumed by ``LiFlowCollator``, and caches every
-sample to disk.  A cache is reused only when the frozen split index, the build
-configuration and the sample count are all unchanged.
-"""
-
 from __future__ import annotations
 
 import hashlib
@@ -54,8 +43,6 @@ _INDEX_COLUMNS = {
 
 
 class LiFlowDataset:
-    """Variable-size time-delayed trajectory dataset with deterministic caching."""
-
     DATASET_VERSION = 1
 
     def __init__(
@@ -93,8 +80,6 @@ class LiFlowDataset:
         if overwrite or not self._cache_is_valid():
             self._build_cache()
 
-    # -- data loading ------------------------------------------------------
-
     def _load_index(self):
         csv_path = self.path / f"{self.split}.csv"
         if not csv_path.exists():
@@ -117,8 +102,6 @@ class LiFlowDataset:
         with open(self.path / "lattice.npy", "rb") as handle:
             self.lattice = np.load(handle, allow_pickle=True).item()
 
-    # -- dataset protocol --------------------------------------------------
-
     def __len__(self) -> int:
         if self.split == "val":
             return len(self._df) * _VALIDATION_N
@@ -130,14 +113,7 @@ class LiFlowDataset:
             return self._load_sample_from_cache(idx)
         return self._build_sample(idx)
 
-    # -- sample construction -----------------------------------------------
-
     def _resolve_index(self, idx: int) -> tuple[int, int | None]:
-        """Map an external index to ``(row_index, time_index)``.
-
-        Validation expands each row over the 11 fixed ``flow_time`` values; the
-        other splits map one-to-one and use a stochastic flow time.
-        """
         if self.split == "val":
             return idx // _VALIDATION_N, idx % _VALIDATION_N
         return idx, None
@@ -145,8 +121,7 @@ class LiFlowDataset:
     def _build_sample(self, idx: int) -> dict[str, Any]:
         row_idx, time_idx = self._resolve_index(idx)
 
-        # The endpoint pair is fixed per row: derive a row-local seed so all 11
-        # validation times share the same trajectory window.
+        # Row-local seed so all 11 validation times share the same trajectory window.
         row_rng = np.random.default_rng(self.seed + row_idx)
         row = self._df.iloc[row_idx]
         name = str(row["name"])
@@ -207,8 +182,6 @@ class LiFlowDataset:
             "lattice": lattice.astype(np.float32),
             "name": name,
         }
-
-    # -- caching -----------------------------------------------------------
 
     def _cache_dir(self) -> Path:
         return self.path / ".liflow_cache" / self.split
@@ -274,7 +247,6 @@ class LiFlowDataset:
 
 
 def _encode(sample: dict[str, Any]) -> dict[str, np.ndarray]:
-    """Serialize a sample as an ``np.savez``-compatible mapping."""
     encoded: dict[str, np.ndarray] = {}
     for key, value in sample.items():
         if isinstance(value, str):

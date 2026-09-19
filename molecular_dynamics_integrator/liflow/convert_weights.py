@@ -12,52 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Convert original PyTorch LiFlow checkpoints into strict-loadable Paddle weights.
-
-The original checkpoints are Lightning ``.ckpt`` files whose model state uses a
-``model.`` prefix holding the raw ``DualPaiNN`` parameters.  The registered
-package is :class:`ppmat.models.liflow.LiFlow`, whose ``state_dict`` exposes the
-same parameters under a ``network.`` prefix.  So the conversion must:
-
-- map each torch key onto the corresponding ``LiFlow`` (``network.*``) key by
-  ignoring the ``model.``/``network.`` prefix,
-- transpose frame-linear ``Linear`` weights (torch stores ``[out, in]`` while
-  paddle stores ``[in, out]``),
-- keep embedding weights and scalar buffers (``freqs``, ``prefactor``,
-  ``r_max``) untransposed, and
-- pin ``float32`` dtype.
-
-Transpositions are NOT guessed from parameter names: each source array is laid
-out against the target model's ``state_dict`` by shape.  A ``2-D`` weight that
-matches the transposed target shape is transposed; anything else is copied as-is.
-This guarantees the produced file satisfies the strict-load contract.
-
-The exporter produces an audit JSON that records the source hash, the key/shape/
-dtype comparison, the number of transposed weights, and the aggregate checksum.
-
-Usage (run under the reference torch env to extract and convert):
-
-    python molecular_dynamics_integrator/liflow/convert_weights.py \\
-        --input liflow_reference/ckpt/P_universal.ckpt \\
-        --output artifacts/liflow_universal_propagator/checkpoints/best.pdparams \\
-        --audit artifacts/propagator_conversion.json
-
-If torch is unavailable (e.g. a pure-Paddle environment), pass ``--state-npz``
-with a ``.npz`` that already holds the ``state_dict`` (keys optionally prefixed
-with ``model.``) together with the model hyper-parameters.  The two-stage flow is:
-
-    # stage 1 (torch env): dump ``state_dict`` into ``state.npz``
-    python molecular_dynamics_integrator/liflow/convert_weights.py \\
-        --input liflow_reference/ckpt/P_universal.ckpt --dump-state \
-        --state-npz artifacts/propagator_state.npz
-
-    # stage 2 (paddle env): convert the numpy state into a paddle checkpoint
-    python molecular_dynamics_integrator/liflow/convert_weights.py \\
-        --state-npz artifacts/propagator_state.npz \\
-        --output artifacts/liflow_universal_propagator/checkpoints/best.pdparams \\
-        --audit artifacts/propagator_conversion.json
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -77,12 +31,8 @@ try:
 except Exception:  # noqa: BLE001 - optional dependency for ckpt cfg extraction
     OmegaConf = None  # type: ignore
 
-# Paddle is imported lazily so the script can at least dump/re-inspect state
-# without a working GPU/Paddle install.
 MODULE_PREFIXES = ("model.", "network.")
 
-# Model hyper-parameters that must be present in the ``.npz`` metadata (or the
-# ``model_cfg`` audit field) to rebuild a target :class:`DualPaiNN`.
 DUAL_PAINN_CFG_KEYS = (
     "num_features",
     "num_radial_basis",
@@ -107,11 +57,6 @@ def _sha256_npz(data: Dict[str, np.ndarray]) -> str:
 
 
 def _extract_model_cfg(ckpt: Dict[str, Any]) -> Dict[str, Any]:
-    """Pull the universal DualPaiNN hyper-parameters out of the checkpoint.
-
-    LiFlow encodes model hyper-parameters as ``hyper_parameters.cfg.model``.
-    Falls back to the universal defaults if the field is missing.
-    """
     hp = ckpt.get("hyper_parameters")
     model_cfg = None
     if isinstance(hp, dict) and "cfg" in hp:
@@ -128,7 +73,6 @@ def _extract_model_cfg(ckpt: Dict[str, Any]) -> Dict[str, Any]:
             keep = {k: container[k] for k in DUAL_PAINN_CFG_KEYS if k in container}
             if len(keep) == len(DUAL_PAINN_CFG_KEYS):
                 return keep
-    # universal defaults
     return {
         "num_features": 64,
         "num_radial_basis": 20,
@@ -145,11 +89,7 @@ def dump_torch_state(
     state_npz_path: str,
     model_cfg: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Extract a Lightning ``.ckpt`` state_dict and write it to a ``.npz``.
-
-    Requires ``torch``.  Returns the audit metadata for the extraction step.
-    """
-    import torch  # imported on purpose: this step only runs under a torch env.
+    import torch
 
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     if not isinstance(ckpt, dict) or "state_dict" not in ckpt:
@@ -186,11 +126,6 @@ def dump_torch_state(
 
 
 def load_state(npz_path: str) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-    """Load a ``.npz`` into ``{key: array}`` and recover embedded model config.
-
-    Returns ``(arrays, model_cfg)``.  State arrays are pure tensor entries; the
-    reserved ``_model_cfg/<name>`` scalar entries are returned as config dict.
-    """
     data = np.load(npz_path)
     arrays: Dict[str, np.ndarray] = {}
     model_cfg: Dict[str, Any] = {}
@@ -235,25 +170,12 @@ def convert_state(
     arrays: Dict[str, np.ndarray],
     target_state_dict: Dict[str, np.ndarray],
 ) -> Dict[str, dict]:
-    """Align ``arrays`` (torch, may carry ``model.``) to ``target_state_dict``.
-
-    Returns ``{paddle_name: {"array": np.ndarray, "transposed": bool}}``.  Raises
-    ``ValueError`` on missing/unexpected keys and on shape mismatches that cannot
-    be reconciled by the transpose rule.
-
-    Transpose rule: a ``2-D`` named ``*.weight`` other than ``atom_embedding``
-    is a ``torch.nn.Linear`` weight stored as ``[out, in]``; Paddle stores it as
-    ``[in, out]`` so it is transposed.  Embedding weights and all scalar buffers
-    (``freqs``, ``prefactor``, ``r_max``, biases) keep their layout.
-    """
     out: Dict[str, dict] = {}
     missing, unexpected, shape_mismatch = [], [], []
 
     stripped_target = {_strip_prefix(name) for name in target_state_dict}
 
-    # Index source arrays by their framework/prefix-stripped name so that a torch
-    # key such as ``model.messages.0.linear_W.weight`` can be laid onto the Paddle
-    # ``LiFlow`` key ``network.messages.0.linear_W.weight``.
+    # Map torch ``model.*`` keys onto Paddle ``network.*`` keys by stripped name.
     src_by_stripped: Dict[str, np.ndarray] = {}
     for key, value in arrays.items():
         src_by_stripped.setdefault(_strip_prefix(key), np.asarray(value))
@@ -266,6 +188,7 @@ def convert_state(
             continue
         expected = np.asarray(expected)
 
+        # Torch Linear weights are [out, in]; Paddle stores them as [in, out].
         should_transpose = (
             src.ndim == 2
             and core.endswith(".weight")
@@ -274,8 +197,7 @@ def convert_state(
         if should_transpose and tuple(src.T.shape) == tuple(expected.shape):
             out[name] = {"array": np.ascontiguousarray(src.T), "transposed": True}
         elif tuple(src.shape) == tuple(expected.shape):
-            # np.ascontiguousarray promotes 0-d arrays to (1,); plain asarray
-            # preserves the target shape (including scalar buffers).
+            # plain asarray preserves the target shape (incl. 0-d scalar buffers)
             out[name] = {"array": np.asarray(src).copy(), "transposed": False}
         else:
             shape_mismatch.append(
@@ -301,7 +223,7 @@ def convert_state(
 
 
 def _to_tensor(array: np.ndarray):
-    import paddle  # lazy import: only needed when writing a paddle checkpoint
+    import paddle
 
     return paddle.to_tensor(array, dtype=paddle.float32)
 
@@ -313,23 +235,9 @@ def convert_checkpoint(
     audit: Optional[str] = None,
     model_cfg: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Convert numpy torch state to a paddle ``.pdparams`` and audit it.
-
-    Args:
-        arrays: ``{key: np.ndarray}`` torch state (keys may carry ``model.``).
-        model: An unbuilt ``DualPaiNN`` with matching hyper-parameters whose
-            ``state_dict()`` is the conversion target.
-        output: Destination ``.pdparams`` path.
-        audit: Optional JSON path where the conversion audit is written.
-        model_cfg: Optional hyper-parameters to record verbatim in the audit.
-
-    Returns:
-        The audit ``dict``.
-    """
     target = {name: np.asarray(v) for name, v in model.state_dict().items()}
     converted = convert_state(arrays, target)
 
-    # validate on the numpy arrays (tensors are only used for saving)
     converted_arrays = {name: info["array"] for name, info in converted.items()}
     key_set_equal = set(converted_arrays) == set(target)
     shape_ok = all(converted_arrays[k].shape == target[k].shape for k in target)
@@ -379,9 +287,7 @@ def _build_dual_painn(model_cfg: Dict[str, Any]):
     from ppmat.models.liflow.liflow import LiFlow
 
     cfg = {k: model_cfg[k] for k in DUAL_PAINN_CFG_KEYS}
-    # Build the registered wrapper (``LiFlow``) so the produced keys carry the
-    # ``network.`` prefix of ``LiFlow.state_dict()``, which is what the model
-    # package strict-loads into.
+    # Build the LiFlow wrapper so keys carry the ``network.`` prefix.
     return LiFlow(**cfg)
 
 
@@ -437,7 +343,6 @@ def main() -> None:
             model_cfg = recovered_cfg
 
     if not model_cfg:
-        # Without explicit hyper-parameters we use the universal defaults.
         model_cfg = {
             "num_features": 64,
             "num_radial_basis": 20,
