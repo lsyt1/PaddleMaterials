@@ -62,7 +62,6 @@ def get_neighbor_list_batch(
         edge_attrs_all.append(
             np.hstack((src[:, None], dst[:, None], image)).astype(np.int64)
         )
-    # np.unique dedupes so the list matches the vesin (full_list=True) reference.
     edge_attrs = np.unique(np.vstack(edge_attrs_all), axis=0)
     edge_index = edge_attrs[:, :2].T
     shifts = edge_attrs[:, 2:] @ lattice  # convert images to Cartesian

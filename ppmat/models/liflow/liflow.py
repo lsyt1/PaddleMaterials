@@ -102,7 +102,6 @@ class LiFlow(RuntimeMixin, nn.Layer):
         end_positions = _as_tensor(batch_data["end_positions"])
         prior = _as_tensor(batch_data["prior"])
 
-        # time / temperature are per-graph and expanded to per-node via batch index
         flow_time = _as_tensor(batch_data["flow_time"]).reshape([-1])
         temperature = _as_tensor(batch_data["temperature"]).reshape([-1])
         if "batch_index" in batch_data:
@@ -110,7 +109,6 @@ class LiFlow(RuntimeMixin, nn.Layer):
         else:
             batch_index = paddle.zeros([start_positions.shape[0]], dtype="int64")
 
-        # Interpolate x_t = (1-t)*source + t*end ; source = start + prior
         source = start_positions + prior
         t_node = flow_time[batch_index][:, None]
         flow_positions = (1.0 - t_node) * source + t_node * end_positions

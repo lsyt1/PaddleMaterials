@@ -28,7 +28,7 @@ import numpy as np
 
 try:
     from omegaconf import OmegaConf
-except Exception:  # noqa: BLE001 - optional dependency for ckpt cfg extraction
+except Exception:  # noqa: BLE001
     OmegaConf = None  # type: ignore
 
 MODULE_PREFIXES = ("model.", "network.")
@@ -67,7 +67,7 @@ def _extract_model_cfg(ckpt: Dict[str, Any]) -> Dict[str, Any]:
     if model_cfg is not None and OmegaConf is not None:
         try:
             container = OmegaConf.to_container(model_cfg, resolve=True)
-        except Exception:  # noqa: BLE001 - not an OmegaConf node
+        except Exception:  # noqa: BLE001
             container = None
         if isinstance(container, dict):
             keep = {k: container[k] for k in DUAL_PAINN_CFG_KEYS if k in container}
@@ -107,7 +107,6 @@ def dump_torch_state(
 
     if not model_cfg:
         model_cfg = _extract_model_cfg(ckpt)
-    # store the cfg under a reserved, non-tensor key (recovered by load_state)
     for k, v in model_cfg.items():
         arrays[f"_model_cfg/{k}"] = np.asarray(v)
 
@@ -175,7 +174,6 @@ def convert_state(
 
     stripped_target = {_strip_prefix(name) for name in target_state_dict}
 
-    # Map torch ``model.*`` keys onto Paddle ``network.*`` keys by stripped name.
     src_by_stripped: Dict[str, np.ndarray] = {}
     for key, value in arrays.items():
         src_by_stripped.setdefault(_strip_prefix(key), np.asarray(value))
@@ -188,7 +186,6 @@ def convert_state(
             continue
         expected = np.asarray(expected)
 
-        # Torch Linear weights are [out, in]; Paddle stores them as [in, out].
         should_transpose = (
             src.ndim == 2
             and core.endswith(".weight")
@@ -197,7 +194,6 @@ def convert_state(
         if should_transpose and tuple(src.T.shape) == tuple(expected.shape):
             out[name] = {"array": np.ascontiguousarray(src.T), "transposed": True}
         elif tuple(src.shape) == tuple(expected.shape):
-            # plain asarray preserves the target shape (incl. 0-d scalar buffers)
             out[name] = {"array": np.asarray(src).copy(), "transposed": False}
         else:
             shape_mismatch.append(
@@ -271,7 +267,7 @@ def convert_checkpoint(
     }
 
     os.makedirs(os.path.dirname(os.path.abspath(output)), exist_ok=True)
-    import paddle  # lazy import: only needed to persist the checkpoint
+    import paddle
 
     paddle.save(paddle_state, output)
 
@@ -287,7 +283,6 @@ def _build_dual_painn(model_cfg: Dict[str, Any]):
     from ppmat.models.liflow.liflow import LiFlow
 
     cfg = {k: model_cfg[k] for k in DUAL_PAINN_CFG_KEYS}
-    # Build the LiFlow wrapper so keys carry the ``network.`` prefix.
     return LiFlow(**cfg)
 
 
@@ -333,7 +328,6 @@ def main() -> None:
         if not model_cfg:
             model_cfg = recovered_cfg
     else:
-        # torch-only path: dump the state_dict into a temp .npz then convert.
         tmp = os.path.join(
             os.path.dirname(os.path.abspath(args.output)), "._dump_state.npz"
         )

@@ -94,7 +94,6 @@ def main():
 
     assert data.edge_index.shape[1] > 0, "neighbor list must contain edges"
 
-    # Run with grad enabled so input gradients can be captured.
     output = model(data)
 
     loss = torch.sum(output**2)

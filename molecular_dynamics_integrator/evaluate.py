@@ -101,7 +101,6 @@ def evaluate_trajectory(
     msd_frame_ref = calculate_msd(reference, frame_mask)
     final_step = int(prediction.shape[0] - 1)
 
-    # RDF: predicted uses [5:] or last frame; reference uses [500::100].
     if prediction.shape[0] <= 5:
         traj_rdf = np.array(prediction[-1])[None]
     else:

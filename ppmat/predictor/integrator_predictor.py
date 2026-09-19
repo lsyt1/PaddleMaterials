@@ -61,7 +61,6 @@ class IntegratorPredictor:
         self.periodic = bool(periodic)
         self.ref_temp = float(ref_temp)
 
-        # Force a consistent eager backend on both models.
         from ppmat.utils.execution import configure_execution_backend
 
         backend = "eager"
@@ -155,7 +154,7 @@ class IntegratorPredictor:
             )
             if solver == "euler":
                 flow = flow + velocity * dt
-            else:  # heun
+            else:
                 predictor_positions = flow + velocity * dt
                 next_velocity = self._velocity_field(
                     condition,

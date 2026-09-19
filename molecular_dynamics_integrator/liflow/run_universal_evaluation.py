@@ -91,7 +91,7 @@ def main() -> None:
                     metrics = evaluate_trajectory(
                         prediction, reference, atomic_numbers, lattice
                     )
-                except Exception:  # noqa: BLE001 (a single combo must not abort the matrix)
+                except Exception:  # noqa: BLE001
                     failures += 1
                     continue
                 row = {

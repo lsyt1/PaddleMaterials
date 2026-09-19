@@ -31,7 +31,6 @@ __all__ = [
 ]
 
 
-# Adapted from yang-song/score_sde_pytorch
 class GaussianFourierBasis(nn.Layer):
     def __init__(self, num_basis: int):
         super().__init__()

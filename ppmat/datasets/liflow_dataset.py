@@ -27,7 +27,6 @@ from ppmat.models.liflow.geometry import get_neighbor_list_batch
 from ppmat.models.liflow.prior import AdaptiveMaxwellBoltzmannPrior
 from ppmat.models.liflow.prior import Prior
 
-# Validation expands each sample over these fixed flow times (11-point grid).
 VALIDATION_TIMES = np.linspace(0.0, 1.0, 11, dtype=np.float32)
 _VALIDATION_N = int(VALIDATION_TIMES.shape[0])
 
@@ -121,7 +120,6 @@ class LiFlowDataset:
     def _build_sample(self, idx: int) -> dict[str, Any]:
         row_idx, time_idx = self._resolve_index(idx)
 
-        # Row-local seed so all 11 validation times share the same trajectory window.
         row_rng = np.random.default_rng(self.seed + row_idx)
         row = self._df.iloc[row_idx]
         name = str(row["name"])
