@@ -36,11 +36,20 @@ Trainer:
 Model:
   __class_name__: MACE
   __init_params__:
-    hidden_dim: 128
-    num_layers: 2
-    num_basis: 8
     r_max: 6.0
+    num_bessel: 10
+    num_polynomial_cutoff: 5
+    max_ell: 3
+    num_interactions: 2
     num_elements: 89
+    hidden_irreps: "128x0e+128x1o"
+    MLP_irreps: "16x0e"
+    correlation: 3
+    radial_MLP: [64, 64, 64]
+    avg_num_neighbors: 61.964672446250916
+    atomic_inter_scale: 0.8041538754478097
+    atomic_inter_shift: 0.16409696359187365
+    property_names: ['energy_per_atom', 'force', 'stress']
 
 Optimizer:
   __class_name__: Adam

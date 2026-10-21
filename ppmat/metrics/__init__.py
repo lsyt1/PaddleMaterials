@@ -37,6 +37,14 @@ class IgnoreNanMetricWrapper:
 
     def __call__(self, pred, label):
 
+        # Labels are collated with their dataset-specific trailing dimensions
+        # (e.g. stress is stored as [1, 3, 3] per sample) while models may emit
+        # [3, 3]. Flatten both when the element counts agree so the boolean
+        # mask below indexes tensors with identical shapes.
+        if pred.shape != label.shape and pred.numel() == label.numel():
+            pred = pred.reshape([-1])
+            label = label.reshape([-1])
+
         valid_value_indices = ~paddle.isnan(label)
         valid_label = label[valid_value_indices]
         valid_pred = pred[valid_value_indices]
