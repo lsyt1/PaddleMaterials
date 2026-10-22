@@ -90,10 +90,21 @@ Dataset:
           format: dict
           primitive: False
           niggli: False
+          # Keep the original Cartesian frame from the JSON so that the
+          # force/stress labels stay consistent with the graph orientation.
+          # The default (canocial=True) rebuilds the lattice from
+          # (a, b, c, alpha, beta, gamma), which silently rotates the frame.
+          canocial: False
           num_cpus: 10
         cache_path: "./data/MPtrj_2022.9_full_cache/train"
         build_graph_cfg: ${Global.graph_converter}
         filter_unvalid: False
+        energy_source: uncorrected_total_energy
+        transforms:
+          - __class_name__: Scale
+            __init_params__:
+              scale: -0.1
+              apply_keys: ['stress']
       num_workers: 0
       use_shared_memory: False
     sampler:
@@ -112,10 +123,21 @@ Dataset:
           format: dict
           primitive: False
           niggli: False
+          # Keep the original Cartesian frame from the JSON so that the
+          # force/stress labels stay consistent with the graph orientation.
+          # The default (canocial=True) rebuilds the lattice from
+          # (a, b, c, alpha, beta, gamma), which silently rotates the frame.
+          canocial: False
           num_cpus: 10
         cache_path: "./data/MPtrj_2022.9_full_cache/val"
         build_graph_cfg: ${Global.graph_converter}
         filter_unvalid: False
+        energy_source: uncorrected_total_energy
+        transforms:
+          - __class_name__: Scale
+            __init_params__:
+              scale: -0.1
+              apply_keys: ['stress']
       num_workers: 0
       use_shared_memory: False
     sampler:
@@ -134,10 +156,21 @@ Dataset:
           format: dict
           primitive: False
           niggli: False
+          # Keep the original Cartesian frame from the JSON so that the
+          # force/stress labels stay consistent with the graph orientation.
+          # The default (canocial=True) rebuilds the lattice from
+          # (a, b, c, alpha, beta, gamma), which silently rotates the frame.
+          canocial: False
           num_cpus: 10
         cache_path: "./data/MPtrj_2022.9_full_cache/test"
         build_graph_cfg: ${Global.graph_converter}
         filter_unvalid: False
+        energy_source: uncorrected_total_energy
+        transforms:
+          - __class_name__: Scale
+            __init_params__:
+              scale: -0.1
+              apply_keys: ['stress']
       num_workers: 0
       use_shared_memory: False
     sampler:
